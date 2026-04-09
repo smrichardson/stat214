@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stat 214 — Lab 3.2 LoRA Fine-Tuning Guide</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}],
+    throwOnError: false
+  });"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400&display=swap');
+  :root {
+    --bg: #faf9f6; --bg-alt: #f0eee9; --text: #2c2c2c; --text-muted: #666;
+    --accent: #003262; --accent-light: #3B7EA1; --border: #ddd;
+    --watchout-bg: #fff3e0; --watchout-border: #e65100;
+    --impl-bg: #f0f4ff; --impl-border: #3B7EA1;
+  }
+  [data-theme="dark"] {
+    --bg: #1a1a1a; --bg-alt: #242424; --text: #d8d4cf; --text-muted: #999;
+    --accent: #6dafd4; --accent-light: #3B7EA1; --border: #3a3a3a;
+    --watchout-bg: #2a1f0f; --watchout-border: #ff9800;
+    --impl-bg: #1a2030; --impl-border: #3B7EA1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Source Serif 4', Georgia, serif; background: var(--bg); color: var(--text);
+    line-height: 1.7; font-size: 17px; max-width: 780px; margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  .theme-toggle {
+    position: fixed; top: 1rem; right: 1rem; background: var(--bg-alt);
+    border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px;
+    cursor: pointer; font-size: 16px; display: flex; align-items: center;
+    justify-content: center; z-index: 100;
+  }
+  header { border-bottom: 3px solid var(--accent); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+  header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; color: var(--accent); margin-bottom: 0.25rem; }
+  header .subtitle { font-size: 0.95rem; color: var(--text-muted); font-style: italic; }
+  h2 { font-size: 1.35rem; font-weight: 700; color: var(--accent); margin: 2.5rem 0 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+  p { margin-bottom: 0.75rem; }
+  .defn {
+    border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0;
+    background: var(--bg-alt); border-radius: 0 4px 4px 0;
+  }
+  .defn .label {
+    font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--accent); display: block; margin-bottom: 0.25rem;
+  }
+  .watchout {
+    border-left: 3px solid var(--watchout-border); padding: 0.6rem 1rem; margin: 0.75rem 0;
+    background: var(--watchout-bg); border-radius: 0 4px 4px 0; font-size: 0.93rem;
+  }
+  .watchout::before { content: "⚠ "; font-weight: 700; }
+  .comparison-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 0.4rem 0.75rem; text-align: left; }
+  .comparison-table th { background: var(--bg-alt); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  ul, ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+  li { margin-bottom: 0.4rem; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--bg-alt); padding: 1px 4px; border-radius: 3px; }
+  pre { background: var(--bg-alt); padding: 0.75rem 1rem; border-radius: 4px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.82rem; line-height: 1.6; }
+  pre code { background: none; padding: 0; }
+  details { margin: 0.75rem 0; }
+  details summary {
+    cursor: pointer; font-size: 0.88rem; color: var(--impl-border); font-weight: 600;
+    user-select: none; padding: 0.4rem 0;
+  }
+  details summary:hover { text-decoration: underline; }
+  details .impl {
+    background: var(--impl-bg); padding: 0.75rem 1rem; margin: 0.25rem 0 0.5rem;
+    border-radius: 4px; font-size: 0.9rem; line-height: 1.65;
+    border-left: 2px solid var(--impl-border);
+  }
+  details .impl pre { background: var(--bg); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'':'dark'); this.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙'" title="Toggle dark mode">🌙</button>
+
+<header>
+  <h1>Lab 3.2 — LoRA Fine-Tuning Guide</h1>
+  <div class="subtitle">Stat 214 · Spring 2026 · Conceptual overview with implementation details</div>
+</header>
+
+
+<h2>What 3.2 asks you to do</h2>
+
+<p>Repeat the 3.1 analysis with two additional embedding methods: (1) pretrained BERT, and (2) BERT fine-tuned with LoRA. Once you have per-word embeddings, the rest of the pipeline is identical to 3.1: downsample → delays → ridge → evaluate CC.</p>
+
+
+<h2>Part 1: Extracting BERT embeddings</h2>
+
+<p>BERT takes text and produces a vector per <em>subword token</em>, not per word. The word "playing" might be tokenized into ["play", "##ing"], each getting its own 768-dimensional vector. You need to aggregate subword vectors back to one vector per original word.</p>
+
+<div class="defn">
+  <span class="label">Pseudocode: BERT embedding extraction</span>
+<pre><code>function get_word_embeddings(words, bert_encoder):
+    # words = ["the", "quick", "brown", "fox"]
+    
+    # 1. Tokenize (is_split_into_words tells BERT these are pre-split)
+    subtokens = bert_tokenizer(words, is_split_into_words=True)
+    # e.g., ["the", "qu", "##ick", "brown", "fox"]
+    
+    # 2. Get the word-to-subtoken mapping
+    word_ids = subtokens.word_ids()
+    # e.g., [0, 1, 1, 2, 3]  — subtokens 1,2 both map to word 1
+
+    # 3. Forward pass through BERT encoder
+    hidden_states = bert_encoder(subtokens)  # (num_subtokens, 768)
+    
+    # 4. Aggregate: mean-pool subtokens sharing the same word_id
+    for each unique word_id w:
+        word_embedding[w] = mean(hidden_states[k] for k where word_ids[k] == w)
+    
+    return word_embeddings  # shape: (len(words), 768)</code></pre>
+</div>
+
+<details><summary>Implementation details (HuggingFace code)</summary>
+<div class="impl">
+<pre><code>from transformers import BertTokenizerFast, BertModel
+import torch, numpy as np
+
+tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+model = BertModel.from_pretrained("bert-base-uncased")
+model.eval()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+def get_word_embeddings(words, tokenizer, model, device):
+    encoding = tokenizer(
+        words, is_split_into_words=True, return_tensors="pt",
+        padding=True, truncation=True, max_length=512,
+        add_special_tokens=False
+    )
+    word_ids = encoding.word_ids()
+    inputs = {k: v.to(device) for k, v in encoding.items()}
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+        hidden = outputs.last_hidden_state[0]  # (seq_len, 768)
+
+    word_vectors = []
+    current_wid, current_vecs = None, []
+    for i, wid in enumerate(word_ids):
+        if wid is None: continue
+        if wid != current_wid:
+            if current_vecs:
+                word_vectors.append(torch.stack(current_vecs).mean(dim=0))
+            current_wid, current_vecs = wid, []
+        current_vecs.append(hidden[i])
+    if current_vecs:
+        word_vectors.append(torch.stack(current_vecs).mean(dim=0))
+
+    assert len(word_vectors) == len(words)
+    return torch.stack(word_vectors).cpu().numpy()</code></pre>
+</div></details>
+
+<h3>Handling long stories (512-token limit)</h3>
+
+<p>Most stories have ~800 words → ~1000+ subtokens, exceeding BERT's 512 limit. Process in overlapping windows: slide a 512-token window across the subtoken sequence with some stride (e.g., 256). For words appearing in multiple windows, average their embeddings across windows.</p>
+
+<details><summary>Implementation details (windowing code)</summary>
+<div class="impl">
+<pre><code>def get_embeddings_long_story(words, tokenizer, model, device,
+                               max_length=512, stride=256):
+    full_enc = tokenizer(words, is_split_into_words=True,
+                         add_special_tokens=False, truncation=False)
+    all_ids = full_enc["input_ids"]
+    all_wids = full_enc.word_ids()
+
+    sums = [np.zeros(768) for _ in range(len(words))]
+    counts = [0] * len(words)
+
+    for start in range(0, len(all_ids), stride):
+        end = min(start + max_length, len(all_ids))
+        window_ids = all_ids[start:end]
+        window_wids = all_wids[start:end]
+
+        inputs = torch.tensor([window_ids]).to(device)
+        with torch.no_grad():
+            hidden = model(input_ids=inputs).last_hidden_state[0]
+
+        cur_wid, cur_vecs = None, []
+        for i, wid in enumerate(window_wids):
+            if wid is None: continue
+            if wid != cur_wid:
+                if cur_vecs and cur_wid is not None:
+                    emb = torch.stack(cur_vecs).mean(0).cpu().numpy()
+                    sums[cur_wid] += emb
+                    counts[cur_wid] += 1
+                cur_wid, cur_vecs = wid, []
+            cur_vecs.append(hidden[i])
+        if cur_vecs and cur_wid is not None:
+            emb = torch.stack(cur_vecs).mean(0).cpu().numpy()
+            sums[cur_wid] += emb
+            counts[cur_wid] += 1
+        if end >= len(all_ids): break
+
+    result = np.zeros((len(words), 768))
+    for w in range(len(words)):
+        if counts[w] > 0:
+            result[w] = sums[w] / counts[w]
+    return result</code></pre>
+</div></details>
+
+
+<h2>Part 2: What LoRA does</h2>
+
+<p>BERT has ~110M parameters. Full fine-tuning updates all of them, risking overfitting on our ~24K words of story data. LoRA freezes all original weights and adds small trainable matrices to specific layers.</p>
+
+<div class="defn">
+  <span class="label">The key idea</span>
+  Each attention layer has weight matrices $W \in \mathbb{R}^{d_1 \times d_2}$ (e.g., $d_1 = d_2 = 768$ for the query projection). LoRA adds a low-rank update:
+  $$W_{\text{new}} = W_{\text{frozen}} + \frac{\gamma}{r} AB^\top$$
+  where $A \in \mathbb{R}^{d_1 \times r}$, $B \in \mathbb{R}^{d_2 \times r}$, $r$ is the rank (e.g., 4 or 8), and $\gamma$ is a scaling factor. Only $A$ and $B$ are trained; $W$ stays frozen.
+  <br><br>
+  <strong>Intuition:</strong> a full $768 \times 768$ matrix has ~590K params per layer. A rank-8 factorization has $768 \times 8 \times 2 = 12{,}288$ params (a 98% reduction). The assumption is that the task-specific adaptation lives in a low-dimensional subspace. Think PCA: a few principal directions capture most of the needed change.
+</div>
+
+
+<h2>Part 3: Fine-tuning with LoRA</h2>
+
+<p>The fine-tuning objective is <strong>Masked Language Modeling (MLM)</strong>: the same task BERT was originally pretrained on, but applied to our story transcripts. This adapts BERT's contextual representations to the narrative domain.</p>
+
+<div class="defn">
+  <span class="label">Pseudocode: LoRA fine-tuning</span>
+<pre><code># ---- Setup ----
+# Load BERT with its MLM prediction head (needed for the MLM loss)
+mlm_model = load_bert_for_masked_lm("bert-base-uncased")
+
+# Apply LoRA: freeze original weights, add trainable A,B to
+# the query and value projections in each attention layer
+apply_lora(mlm_model, rank=8, target=["query", "value"])
+
+# ---- Prepare data ----
+stories = load_story_transcripts()  # from raw_text.pkl
+
+# Tokenize into chunks ≤ 512 tokens with overlap
+chunks = sliding_window_tokenize(stories, max_length=512, stride=256)
+
+# ---- Train ----
+for epoch in range(num_epochs):
+    for chunk in shuffle(chunks):
+        # Mask 15% of tokens:
+        #   80% → [MASK], 10% → random token, 10% → unchanged
+        masked_chunk, labels = apply_mlm_masking(chunk, prob=0.15)
+        
+        # Forward: predict masked tokens from context
+        loss = mlm_model(masked_chunk, labels)
+        
+        # Backward: only A, B matrices receive gradients
+        loss.backward()
+        optimizer.step()
+
+# Save adapter (~1-5 MB, just the A and B matrices)
+save_lora_adapter("lora_adapter")</code></pre>
+</div>
+
+<details><summary>Implementation details (HuggingFace + PEFT code)</summary>
+<div class="impl">
+<pre><code>import pickle, torch, torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+from transformers import (BertTokenizerFast, BertForMaskedLM,
+                          DataCollatorForLanguageModeling)
+from peft import LoraConfig, get_peft_model
+
+# --- Data ---
+tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+with open('raw_text.pkl', 'rb') as f:
+    raw_text = pickle.load(f)
+
+story_texts = []
+for name, seq in raw_text.items():
+    words = [str(w) for w in seq.data if isinstance(w, str)]
+    story_texts.append(" ".join(words))
+
+class StoryMLMDataset(Dataset):
+    def __init__(self, texts, tokenizer, max_length=512, stride=256):
+        self.examples = []
+        for text in texts:
+            ids = tokenizer(text, truncation=False)["input_ids"]
+            for start in range(0, len(ids), stride):
+                chunk = ids[start:start+max_length]
+                if len(chunk) >= 32:
+                    self.examples.append(torch.tensor(chunk))
+    def __len__(self): return len(self.examples)
+    def __getitem__(self, idx): return {"input_ids": self.examples[idx]}
+
+dataset = StoryMLMDataset(story_texts, tokenizer)
+collator = DataCollatorForLanguageModeling(tokenizer=tokenizer,
+                                            mlm=True, mlm_probability=0.15)
+dataloader = DataLoader(dataset, batch_size=8, shuffle=True,
+                        collate_fn=collator)
+
+# --- Model + LoRA ---
+mlm_model = BertForMaskedLM.from_pretrained("bert-base-uncased")
+lora_config = LoraConfig(
+    r=8, lora_alpha=16, lora_dropout=0.1,
+    target_modules=["query", "value"]
+)
+lora_model = get_peft_model(mlm_model, lora_config)
+lora_model.print_trainable_parameters()
+
+# --- Train ---
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+lora_model.to(device)
+lora_model.train()
+optimizer = optim.AdamW(lora_model.parameters(), lr=2e-4)
+
+for epoch in range(3):
+    total_loss, n = 0, 0
+    for batch in dataloader:
+        batch = {k: v.to(device) for k, v in batch.items()}
+        loss = lora_model(**batch).loss
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+        total_loss += loss.item()
+        n += 1
+    print(f"Epoch {epoch+1}, Loss: {total_loss/n:.4f}")
+    # Expected: starts ~2.5-3.5, drops to ~2.0-2.5. Below 1.5 = overfitting.
+
+lora_model.save_pretrained("lora_adapter_r8")</code></pre>
+</div></details>
+
+
+<h2>Part 4: Extracting embeddings from the fine-tuned model</h2>
+
+<div class="defn">
+  <span class="label">Pseudocode</span>
+<pre><code># Load base BERT encoder (NOT the MLM head)
+base_encoder = load_bert_model("bert-base-uncased")
+
+# Load LoRA adapter on top of the encoder
+finetuned_encoder = load_lora_adapter(base_encoder, "lora_adapter")
+
+# Same extraction function as Part 1
+embeddings = get_word_embeddings(words, finetuned_encoder)
+# → (W_s, 768)
+
+# Then: downsample → delays → ridge → CC (identical to 3.1)</code></pre>
+</div>
+
+<details><summary>Implementation details</summary>
+<div class="impl">
+<pre><code>from peft import PeftModel
+from transformers import BertModel
+
+base = BertModel.from_pretrained("bert-base-uncased")
+finetuned = PeftModel.from_pretrained(base, "lora_adapter_r8")
+finetuned.eval()
+finetuned.to(device)
+
+# Use the same get_word_embeddings / get_embeddings_long_story
+# functions from Part 1, passing finetuned as the model
+embeddings = get_word_embeddings(words, tokenizer, finetuned, device)</code></pre>
+</div></details>
+
+<div class="watchout"><strong>BertModel vs BertForMaskedLM.</strong> These are different classes.
+<code>BertModel</code> outputs <code>last_hidden_state</code> (shape: seq_len × 768): these are the embeddings you want.
+<code>BertForMaskedLM</code> = <code>BertModel</code> + an MLM prediction head (dense → layer norm → projection to vocab size 30,522). It outputs <code>logits</code> (shape: seq_len × 30,522), which are token predictions, not embeddings. You train with <code>BertForMaskedLM</code> (because you need the MLM loss), but extract embeddings from <code>BertModel</code> (because you want the hidden states). The LoRA adapter modifies the attention layers, which are shared between both. If a student accidentally extracts from the MLM model, they'll get vocabulary logits instead of embeddings, and the shapes won't match.
+You can also access the base encoder inside <code>BertForMaskedLM</code> via <code>model.bert</code>, but loading the adapter onto a fresh <code>BertModel</code> is cleaner.</div>
+
+
+<h2>Hyperparameters to explore</h2>
+
+<table class="comparison-table">
+  <tr><th>Parameter</th><th>What it controls</th><th>Start with</th><th>Explore</th></tr>
+  <tr><td>Rank ($r$)</td><td>Capacity of the adaptation</td><td>8</td><td>4, 8, 16</td></tr>
+  <tr><td>Scaling ($\gamma$, <code>lora_alpha</code>)</td><td>Update magnitude. Effective rate scales as $\gamma / r$</td><td>$2r$</td><td>$r$ to $2r$</td></tr>
+  <tr><td>Target modules</td><td>Which attention weights get adapters</td><td>query + value</td><td>Try adding key</td></tr>
+  <tr><td>Learning rate</td><td>Optimizer step size</td><td>$2 \times 10^{-4}$</td><td>$10^{-4}$ to $5 \times 10^{-4}$</td></tr>
+  <tr><td>Epochs</td><td>Passes over the data</td><td>3</td><td>3–5</td></tr>
+  <tr><td>Window stride</td><td>Overlap between training chunks</td><td>256</td><td>128–384</td></tr>
+</table>
+
+<p>Compare at least 2-3 rank values and report how downstream CC changes. Does higher rank help, or does it overfit?</p>
+
+
+<h2>Questions to address in the report</h2>
+
+<ul>
+  <li><strong>Does fine-tuning help?</strong> Compare pretrained vs LoRA-finetuned BERT on mean CC, top 1%/5% CC. If fine-tuning doesn't help, why? Is there a mismatch between the MLM objective (predicting masked tokens) and the downstream use (extracting embeddings for ridge regression)?</li>
+
+  <li><strong>Do contextual embeddings predict different voxels?</strong> Compute Jaccard similarity of top-5% voxel sets between BERT and Word2Vec/GloVe. If BERT predicts well in different brain regions, it captures different linguistic information.</li>
+
+  <li><strong>Data leakage?</strong> You fine-tune BERT on the story transcripts, then use those same transcripts for ridge regression. The MLM task never sees fMRI data, so label information (BOLD signal) is not leaked. But the input distribution is shared. Discuss this choice.</li>
+
+  <li><strong>Stability of hyperparameters.</strong> If changing rank from 8 to 16 flips which voxels are "well-predicted," the conclusions are fragile. This is a natural stability analysis for the PCS framework.</li>
+</ul>
+
+
+<h2>Common pitfalls</h2>
+
+<div class="watchout"><strong>Subword alignment.</strong> BERT tokenizes "playing" into ["play", "##ing"]. You must aggregate these back to one embedding per original word. The <code>word_ids()</code> method gives the mapping. If your embedding count doesn't match your word count, the alignment with the fMRI data will be wrong and everything downstream breaks silently.</div>
+
+<div class="watchout"><strong>512-token limit.</strong> If you truncate to 512 and ignore the rest, you lose the end of every story. Use overlapping windows.</div>
+
+<div class="watchout"><strong>GPU memory.</strong> If you get CUDA OOM errors: reduce batch size, use gradient accumulation, or reduce <code>max_length</code>. Submit via <code>sbatch</code> with <code>--gres=gpu:1 --mem=32G</code>.</div>
+
+<details><summary>Gradient accumulation (if batch size 8 doesn't fit in memory)</summary>
+<div class="impl">
+<pre><code>accum_steps = 4  # effective batch = 2 * 4 = 8
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True,
+                        collate_fn=collator)
+optimizer.zero_grad()
+for i, batch in enumerate(dataloader):
+    batch = {k: v.to(device) for k, v in batch.items()}
+    loss = lora_model(**batch).loss / accum_steps
+    loss.backward()
+    if (i + 1) % accum_steps == 0:
+        optimizer.step()
+        optimizer.zero_grad()</code></pre>
+</div></details>
+
+<div class="watchout"><strong>Training on test data.</strong> If using leave-one-story-out for ridge CV, consider whether the held-out story should also be excluded from LoRA fine-tuning. The simplest approach: fine-tune on all stories (MLM doesn't use fMRI labels, so it's not label leakage), then do LOSO only at the ridge step. Document your choice.</div>
+
+<p style="margin-top:2rem;font-size:0.9rem;color:var(--text-muted);">Key libraries: <code>transformers</code>, <code>peft</code>, <code>torch</code>. See the <a href="https://huggingface.co/docs/peft/en/index">PEFT docs</a> and the <a href="https://huggingface.co/docs/diffusers/en/training/lora">HuggingFace LoRA tutorial</a> linked in the lab instructions.</p>
+
+</body>
+</html>
