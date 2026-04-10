@@ -514,29 +514,20 @@ if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random
   We report aggregate statistics across all voxels: mean CC, median CC, top 1% CC, and top 5% CC. Most voxels will have $r_i \approx 0$ (they are not involved in language processing), while a subset of language-responsive voxels will show meaningful correlations.
 </div>
 
+<h3>Train/Test Split Strategies</h3>
+
+<p>The lab instructions say "split the stories into a training and test set" but leave the details to you. There are several reasonable approaches, and the choice matters for how you report and compare results.</p>
+
+<p><strong>Fixed holdout:</strong> reserve a small number of stories (e.g., 2-5) as a test set, train on the rest. Simple, but your CC estimates depend on which specific stories you held out. A long, complex story might be harder to predict than a short simple one, so the particular test set can shift your numbers noticeably.</p>
+
+<p><strong>Leave-one-story-out (LOSO):</strong> hold out each story in turn, train on the remaining ~100, predict the held-out story. This gives you a CC distribution across held-out stories rather than a single number, which is more informative. It's also what Huth et al. use for $\alpha_{\text{ridge}}$ selection. The downside is computational cost (101 ridge fits per embedding method), though the incremental trick mentioned above helps a lot.</p>
+
+<p><strong>Multiple random splits:</strong> randomly partition stories into train/test several times, fit and evaluate each split, report averaged CCs. This gives you error bars on your evaluation metrics, which strengthens any comparison between embedding methods. If BERT beats GloVe on one split but not another, that's important to know.</p>
+
+<p>Whatever you choose, use the same splits across all embedding methods so comparisons are fair. And if you report a single number (e.g., "mean CC = 0.12"), be clear about what it's averaging over: voxels, stories, splits, or some combination.</p>
+
 <div class="watchout">Memory is the main computational bottleneck. The $X$ matrix ($T \times 4p$) is manageable, but $Y$ ($T \times 94{,}000$) in float64 is ~18 GB across all stories. Practical solutions: cast to <code>float32</code> (halves memory), use memory-mapped loading (<code>np.load(..., mmap_mode='r')</code>), and process voxels in batches rather than all at once. Students who completed 3.1 should already have a working pipeline for this.</div>
 
-<h3>Why Ridge Regression?</h3>
-
-<div class="defn">
-  <span class="label">Why Ridge Works Here</span>
-  With BERT embeddings and 4 delays, the feature dimension is $4p = 3{,}072$. We have $T \approx 23{,}000$ timepoints, so $T > 4p$, but the delayed features are highly correlated (lag 1 and lag 2 of the same embedding are nearly identical), which means OLS would overfit badly. Ridge shrinks correlated coefficients jointly, stabilizing the solution.
-  <br><br>
-  It also has a closed-form solution: $\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y$ is computed once and applied to all 94k voxels, so no iterative optimization is needed.
-  <br><br>
-  Conceptually, the encoding model is $f = g \circ h$, where $g$ is the nonlinear embedding (Word2Vec, BERT, etc.) and $h$ is the linear ridge map. All the representational power comes from $g$; the regression just projects embeddings onto voxel responses. This is the standard "linearized model" approach in computational neuroscience (Huth et al., 2016).
-</div>
-
-<div class="defn">
-  <span class="label">Alternatives</span>
-  <strong>OLS:</strong> overfits due to multicollinearity from the delayed features. Not viable.
-  <br><br>
-  <strong>Lasso:</strong> produces sparse weights (potentially more interpretable), but much slower (no closed-form, iterative per voxel), the sparsity assumption probably doesn't hold (brain responses depend on many embedding dimensions), and L1 is unstable with correlated features.
-  <br><br>
-  <strong>Elastic net:</strong> could work but adds a hyperparameter and is slower.
-  <br><br>
-  <strong>Nonlinear models:</strong> fMRI data is noisy enough that neural nets and random forests tend to overfit here. The linearized approach (nonlinear embedding + linear map) is standard in the field for this data regime.
-</div>
 
 
 <h2 id="interp">Interpretation (Lab 3.3)</h2>
