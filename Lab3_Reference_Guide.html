@@ -1,795 +1,805 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stat 214 — Lab 3 Reference Guide</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-  onload="renderMathInElement(document.body, {
-    delimiters: [
-      {left: '$$', right: '$$', display: true},
-      {left: '$', right: '$', display: false}
-    ],
-    throwOnError: false
-  });"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400&display=swap');
-  :root {
-    --bg: #faf9f6; --bg-alt: #f0eee9; --text: #2c2c2c; --text-muted: #666;
-    --accent: #003262; --accent-light: #3B7EA1; --border: #ddd;
-    --proof-bg: #f5f3ee; --watchout-bg: #fff3e0; --watchout-border: #e65100;
-    --ref-bg: #e8f0e8; --ref-border: #4a7c59;
-    --pipeline-bg: #eef3f8; --pipeline-border: #003262;
-  }
-  [data-theme="dark"] {
-    --bg: #1a1a1a; --bg-alt: #242424; --text: #d8d4cf; --text-muted: #999;
-    --accent: #6dafd4; --accent-light: #3B7EA1; --border: #3a3a3a;
-    --proof-bg: #222; --watchout-bg: #2a1f0f; --watchout-border: #ff9800;
-    --ref-bg: #1a2a1a; --ref-border: #6aaa6a;
-    --pipeline-bg: #1a2433; --pipeline-border: #6dafd4;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Source Serif 4', Georgia, serif; background: var(--bg); color: var(--text);
-    line-height: 1.7; font-size: 17px; max-width: 780px; margin: 0 auto;
-    padding: 2rem 1.5rem 6rem; transition: background 0.3s, color 0.3s;
-  }
-  .theme-toggle {
-    position: fixed; top: 1rem; right: 1rem; background: var(--bg-alt);
-    border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px;
-    cursor: pointer; font-size: 16px; display: flex; align-items: center;
-    justify-content: center; z-index: 100; transition: all 0.3s;
-  }
-  .theme-toggle:hover { transform: scale(1.1); }
-  .nav-toc {
-    position: fixed; top: 1rem; left: 1rem; max-height: calc(100vh - 2rem);
-    overflow-y: auto; width: 220px; font-size: 12px; line-height: 1.5;
-    color: var(--text-muted); display: none;
-  }
-  @media (min-width: 1200px) { .nav-toc { display: block; } body { margin-left: 260px; } }
-  .nav-toc a {
-    color: var(--text-muted); text-decoration: none; display: block; padding: 2px 0;
-    border-left: 2px solid transparent; padding-left: 8px;
-  }
-  .nav-toc a:hover, .nav-toc a.active { color: var(--accent); border-left-color: var(--accent); }
-  .nav-toc .toc-h2 { padding-left: 16px; font-size: 11px; }
-  header { border-bottom: 3px solid var(--accent); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
-  header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; color: var(--accent); margin-bottom: 0.25rem; }
-  header .subtitle { font-size: 0.95rem; color: var(--text-muted); font-style: italic; }
-  h2 { font-size: 1.35rem; font-weight: 700; color: var(--accent); margin: 2.5rem 0 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
-  h2:hover { color: var(--accent-light); }
-  .collapse-indicator { transition: transform 0.2s; }
-  h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--text); }
-  p { margin-bottom: 0.75rem; }
-  .defn, .thm, .lemma, .prop {
-    border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0;
-    background: var(--bg-alt); border-radius: 0 4px 4px 0;
-  }
-  .defn .label, .thm .label, .lemma .label, .prop .label {
-    font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
-    letter-spacing: 0.05em; color: var(--accent); display: block; margin-bottom: 0.25rem;
-  }
-  .watchout {
-    border-left: 3px solid var(--watchout-border); padding: 0.6rem 1rem; margin: 0.75rem 0;
-    background: var(--watchout-bg); border-radius: 0 4px 4px 0; font-size: 0.93rem;
-  }
-  .watchout::before { content: "⚠ "; font-weight: 700; }
-  details { margin: 0.5rem 0; }
-  details summary { cursor: pointer; font-size: 0.9rem; color: var(--accent); font-weight: 600; user-select: none; padding: 0.25rem 0; }
-  details summary:hover { text-decoration: underline; }
-  details .proof-body {
-    background: var(--proof-bg); padding: 0.75rem 1rem; margin: 0.25rem 0 0.5rem;
-    border-radius: 4px; font-size: 0.93rem; line-height: 1.65; border-left: 2px solid var(--border);
-  }
-  .ref-table {
-    background: var(--ref-bg); border: 1px solid var(--ref-border); border-radius: 6px;
-    padding: 1rem 1.25rem; margin: 1.5rem 0; font-size: 0.9rem; line-height: 1.8;
-  }
-  .ref-table .ref-title { font-weight: 700; font-size: 1rem; color: var(--ref-border); margin-bottom: 0.5rem; }
-  .ref-table .ref-item { margin-bottom: 0.25rem; }
-  .ref-table .ref-item .ref-name { font-weight: 600; }
-  .comparison-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-  .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 0.4rem 0.75rem; text-align: left; }
-  .comparison-table th { background: var(--bg-alt); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; }
-  ul { margin: 0.5rem 0 0.5rem 1.5rem; }
-  li { margin-bottom: 0.3rem; }
-  .katex-display { margin: 0.75rem 0; overflow-x: auto; }
-  code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--bg-alt); padding: 1px 4px; border-radius: 3px; }
-  pre { background: var(--bg-alt); padding: 0.75rem 1rem; border-radius: 4px; overflow-x: auto; margin: 0.75rem 0; font-size: 0.88rem; line-height: 1.5; }
-  pre code { background: none; padding: 0; }
-  .pipeline-box {
-    background: var(--pipeline-bg); border: 1px solid var(--pipeline-border); border-radius: 8px;
-    padding: 1rem 1.25rem; margin: 1.5rem 0; font-size: 0.95rem;
-  }
-  .pipeline-box .pipe-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--accent); }
-  .pipe-steps { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; font-size: 0.88rem; line-height: 2; }
-  .pipe-step { padding: 0.2rem 0.6rem; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; white-space: nowrap; }
-  .pipe-arrow { color: var(--text-muted); }
-</style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.4">
+  <style type="text/css">
+    body {background-color: #f9f8f4}
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px '.Apple Color Emoji UI'; color: #000000; color: rgba(0, 0, 0, 0.85); -webkit-text-stroke: rgba(0, 0, 0, 0.85)}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.4px 'Helvetica Neue'; color: #535353; -webkit-text-stroke: #535353}
+    p.p5 {margin: 0.0px 0.0px 9.0px 0.0px; font: 17.0px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121}
+    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f}
+    p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121}
+    p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.8px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121}
+    p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.8px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; min-height: 12.0px}
+    p.p10 {margin: 0.0px 0.0px 9.0px 0.0px; font: 10.2px 'Helvetica Neue'; color: #535353; -webkit-text-stroke: #535353}
+    p.p11 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.4px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f}
+    p.p12 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.8px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; background-color: #f9f8f4}
+    p.p13 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.6px 'Helvetica Neue'; color: #535353; -webkit-text-stroke: #535353}
+    p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; font: 17.0px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; background-color: #eceae4}
+    p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; background-color: #fff0d9}
+    p.p18 {margin: 0.0px 0.0px 0.0px 0.0px; font: 17.0px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121}
+    p.p19 {margin: 0.0px 0.0px 0.0px 0.0px; font: 17.0px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; min-height: 20.0px}
+    p.p20 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.8px 'Helvetica Neue'; color: #535353; -webkit-text-stroke: #535353}
+    p.p21 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.4px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121}
+    p.p22 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.6px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; background-color: #f9f8f4}
+    p.p23 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.6px 'Helvetica Neue'; color: #535353; -webkit-text-stroke: #535353}
+    p.p24 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 10.2px 'Helvetica Neue'; color: #535353; -webkit-text-stroke: #535353}
+    p.p25 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.3px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; background-color: #eceae4}
+    p.p26 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.3px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; background-color: #eceae4; min-height: 11.0px}
+    p.p27 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121; min-height: 12.0px}
+    p.p28 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Neue'; color: #3b6a47; -webkit-text-stroke: #3b6a47}
+    li.li17 {margin: 0.0px 0.0px 3.6px 0.0px; font: 17.0px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121}
+    span.s1 {font-kerning: none; background-color: #eceae4}
+    span.s2 {font-kerning: none}
+    span.s3 {font-kerning: none; background-color: #eaf0f6}
+    span.s4 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+    span.s5 {font: 15.0px 'Helvetica Neue'; font-kerning: none; background-color: #eceae4}
+    span.s6 {-webkit-text-stroke: 0px #000000}
+    span.s7 {font: 15.0px 'Helvetica Neue'; font-kerning: none}
+    span.s8 {font: 9.0px 'Helvetica Neue'; font-kerning: none; background-color: #eceae4}
+    span.s9 {font: 9.8px 'Helvetica Neue'; font-kerning: none; background-color: #eceae4}
+    span.s10 {font-kerning: none; background-color: #e3ede2}
+    span.s11 {font: 9.5px 'Helvetica Neue'; font-kerning: none; background-color: #eceae4}
+    table.t1 {margin: 6.0px 0.0px 6.0px 0.0px; border-collapse: collapse}
+    table.t2 {margin: 12.0px 0.0px 12.0px 0.0px; border-collapse: collapse}
+    td.td1 {width: 141.3px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td2 {width: 356.0px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td3 {width: 218.8px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td4 {width: 141.3px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td5 {width: 356.0px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td6 {width: 218.8px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td7 {width: 105.2px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td8 {width: 139.1px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td9 {width: 156.2px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td10 {width: 315.5px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td11 {width: 105.2px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td12 {width: 139.1px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td13 {width: 156.2px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td14 {width: 315.5px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td15 {width: 412.4px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td16 {width: 165.3px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td17 {width: 412.4px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td18 {width: 165.3px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td19 {width: 90.0px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td20 {width: 80.3px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td21 {width: 572.6px; background-color: #eceae4; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td22 {width: 90.0px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td23 {width: 80.3px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    td.td24 {width: 572.6px; border-style: solid; border-width: 1.0px 1.0px 1.0px 1.0px; border-color: #d5d5d5 #d5d5d5 #d5d5d5 #d5d5d5; padding: 4.8px 9.0px 4.8px 9.0px}
+    ul.ul1 {list-style-type: disc}
+  </style>
 </head>
 <body>
-
-<button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
-
-<nav class="nav-toc">
-  <strong style="font-size:13px;color:var(--accent);">Contents</strong>
-  <a href="#overview">Overview</a>
-  <a href="#neuro">Neuroimaging Terms</a>
-  <a href="#neuro-bold" class="toc-h2">BOLD &amp; fMRI</a>
-  <a href="#neuro-hrf" class="toc-h2">Hemodynamic Response</a>
-  <a href="#embeddings">Text Embeddings</a>
-  <a href="#emb-static" class="toc-h2">Static (BoW, W2V, GloVe)</a>
-  <a href="#emb-bert" class="toc-h2">BERT</a>
-  <a href="#emb-lora" class="toc-h2">LoRA</a>
-  <a href="#pipeline">The Pipeline</a>
-  <a href="#pipeline-downsample" class="toc-h2">Downsampling</a>
-  <a href="#pipeline-delays" class="toc-h2">Delays</a>
-  <a href="#pipeline-ridge" class="toc-h2">Ridge Regression</a>
-  <a href="#interp">Interpretation</a>
-  <a href="#interp-shap" class="toc-h2">SHAP</a>
-  <a href="#interp-lime" class="toc-h2">LIME</a>
-  <a href="#pcs">PCS Framework</a>
-  <a href="#data">Data Summary</a>
-  <a href="#infra">Infrastructure</a>
-  <a href="#timeline">Timeline &amp; Deadlines</a>
-  <a href="#ref">Quick Reference</a>
-</nav>
-
-<header>
-  <h1>Lab 3 Reference Guide</h1>
-  <div class="subtitle">Stat 214 — Connecting Language to fMRI · Spring 2026</div>
-</header>
-
-<h2 id="overview">Overview</h2>
-
-<p><strong>The question:</strong> can we predict how the brain responds to language? Subjects listen to podcast stories while an fMRI scanner records their brain activity every 2 seconds at ~94,000 spatial locations (voxels). We build <em>encoding models</em> that take text embeddings as input and predict the BOLD signal at each voxel.</p>
-
-<p><strong>Why it matters:</strong> a model that can predict brain responses to language implies something about how the brain represents language. The features that drive good predictions might correspond to the actual representations used by the brain. This connects computational NLP to cognitive neuroscience.</p>
-
-<div class="defn">
-  <span class="label">Notation used throughout this guide</span>
-  <table class="comparison-table" style="margin:0.5rem 0;">
-    <tr><th>Symbol</th><th>Meaning</th><th>Typical value</th></tr>
-    <tr><td>$j$</td><td>Subject index</td><td>$j \in \{2, 3\}$</td></tr>
-    <tr><td>$s$</td><td>Story index</td><td>$s = 1, \ldots, 101$</td></tr>
-    <tr><td>$i$</td><td>Voxel index</td><td>$i = 1, \ldots, V_j$</td></tr>
-    <tr><td>$t$</td><td>Timepoint index (within a story or stacked)</td><td></td></tr>
-    <tr><td>$W_s$</td><td>Number of words in story $s$</td><td>$\sim 800$</td></tr>
-    <tr><td>$p$</td><td>Embedding dimension</td><td>$300$ (Word2Vec), $768$ (BERT)</td></tr>
-    <tr><td>$T_s$</td><td>Number of timepoints for story $s$ (before trimming)</td><td>$\sim 241$</td></tr>
-    <tr><td>$T$</td><td>Total timepoints across all training stories (after trimming)</td><td>$\approx 23{,}000$</td></tr>
-    <tr><td>$V_j$</td><td>Number of voxels for subject $j$</td><td>$94{,}251$ (subj 2), $95{,}556$ (subj 3)</td></tr>
-    <tr><td>$E$</td><td>Raw word embedding matrix for one story</td><td>$\in \mathbb{R}^{W_s \times p}$</td></tr>
-    <tr><td>$E'$</td><td>Downsampled embedding matrix (at scanner rate)</td><td>$\in \mathbb{R}^{T_s \times p}$</td></tr>
-    <tr><td>$X$</td><td>Design matrix (delayed features, stacked across stories)</td><td>$\in \mathbb{R}^{T \times 4p}$</td></tr>
-    <tr><td>$Y$</td><td>BOLD response matrix (stacked across stories, one subject)</td><td>$\in \mathbb{R}^{T \times V_j}$</td></tr>
-    <tr><td>$\hat{B}$</td><td>Ridge weight matrix (all voxels). Column $i$ is $\hat{\beta}_i$</td><td>$\in \mathbb{R}^{4p \times V_j}$</td></tr>
-    <tr><td>$\hat{\beta}_i$</td><td>Weight vector for voxel $i$</td><td>$\in \mathbb{R}^{4p}$</td></tr>
-    <tr><td>$\alpha_{\text{ridge}}$</td><td>Ridge regularization parameter</td><td>selected via CV</td></tr>
-    <tr><td>$r_i$</td><td>Pearson CC for voxel $i$ on test story</td><td></td></tr>
-  </table>
-  <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.25rem;">When working within a single subject (as we usually do), we drop the $j$ subscript and write $V$ for $V_j$.</p>
-</div>
-
-<div class="pipeline-box">
-  <div class="pipe-title">The Full Pipeline</div>
-  <div class="pipe-steps">
-    <span class="pipe-step">Raw text</span>
-    <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Word embeddings</span>
-    <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Lanczos downsample</span>
-    <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Add delays (1-4 TR intervals)</span>
-    <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Trim edges</span>
-    <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Ridge regression</span>
-    <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Predict BOLD</span>
-  </div>
-  <p style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-muted);">One model per subject. Ridge regression is fit with the same $X$ matrix across all ~94k voxels (different $y$ column per voxel). Evaluation: Pearson correlation between predicted and actual BOLD per voxel on held-out stories.</p>
-</div>
-
-<div class="defn">
-  <span class="label">Dimensions at Each Step (one story, BERT, subject 2)</span>
-  <table class="comparison-table" style="margin:0.5rem 0;">
-    <tr><th>Step</th><th>Object</th><th>Shape</th><th>Notes</th></tr>
-    <tr><td>Raw text</td><td>Word list</td><td>$W_s$ words</td><td>e.g., $W_s \approx 800$ for a ~5 min story</td></tr>
-    <tr><td>Embedding</td><td>$E$</td><td>$W_s \times p$</td><td>$p = 768$ for BERT, $300$ for Word2Vec</td></tr>
-    <tr><td>Downsample</td><td>$E'$</td><td>$T_s \times p$</td><td>$T_s \approx 241$ timepoints for one story</td></tr>
-    <tr><td>Add delays</td><td>$X_{\text{story}}$</td><td>$T_s \times 4p$</td><td>$4 \times 768 = 3072$ for BERT</td></tr>
-    <tr><td>Trim</td><td>$X_{\text{story}}$</td><td>$(T_s - 15) \times 4p$</td><td>Remove first 5, last 10 timepoints</td></tr>
-    <tr><td>Stack stories</td><td>$X$</td><td>$T \times 4p$</td><td>$T = \sum_s (T_s - 15) \approx 23{,}000$</td></tr>
-    <tr><td>BOLD response</td><td>$Y$</td><td>$T \times V$</td><td>$V = 94{,}251$ for subject 2</td></tr>
-    <tr><td>Ridge solution</td><td>$\hat{B}$</td><td>$4p \times V$</td><td>One weight vector $\hat{\beta}_i$ per voxel (column)</td></tr>
-    <tr><td>Prediction</td><td>$\hat{Y}_{\text{test}}$</td><td>$T_{\text{test}} \times V$</td><td>Evaluate CC per column</td></tr>
-  </table>
-</div>
-
-
-<h2 id="neuro">Neuroimaging Terms</h2>
-
-<h3 id="neuro-bold">fMRI and the BOLD Signal</h3>
-
-<div class="defn">
-  <span class="label">fMRI</span>
-  Functional Magnetic Resonance Imaging. Measures brain activity indirectly by detecting changes in blood oxygenation. Does not measure neural firing directly: it captures the <em>hemodynamic</em> consequences of neural activity.
-</div>
-
-<div class="defn">
-  <span class="label">BOLD Signal</span>
-  Blood-Oxygen-Level-Dependent signal. When neurons fire, local blood flow increases and the ratio of oxygenated to deoxygenated hemoglobin shifts. This change is what fMRI detects. The BOLD signal is a <em>proxy</em> for neural activity, not the activity itself.
-</div>
-
-<div class="defn">
-  <span class="label">Voxel</span>
-  A volumetric pixel: a tiny 3D cube of brain tissue (~2mm per side in this experiment). Each subject has approximately 94,000 voxels. Think of each voxel as one spatial "measurement point" in the brain. The data for one story $s$ and one subject $j$ is a matrix $Y \in \mathbb{R}^{T_s \times V_j}$, where $T_s$ is the number of timepoints for that story and $V_j$ is the number of voxels for that subject ($V_2 = 94{,}251$, $V_3 = 95{,}556$). Each subject has a different voxel count because brains differ in size and shape. We fit entirely separate models per subject: no data is shared across subjects.
-</div>
-
-<div class="defn">
-  <span class="label">TR (Repetition Time)</span>
-  The time interval between consecutive fMRI scans: TR $\approx$ 2.0045 seconds in this experiment. Every TR interval, the scanner captures one full-brain snapshot (called a <strong>volume</strong> or <strong>timepoint</strong>). A 10-minute story yields roughly 300 timepoints. We use $T_s$ to denote the number of timepoints for story $s$.
-</div>
-
-<h3 id="neuro-hrf">Hemodynamic Response</h3>
-
-<div class="defn">
-  <span class="label">HRF (Hemodynamic Response Function)</span>
-  The BOLD signal does not spike instantly when neurons fire. It peaks approximately 4-6 seconds after the neural event and takes ~15 seconds to return to baseline. This lag is the hemodynamic response function. The pipeline accounts for this by adding time-lagged copies of the features (see <a href="#pipeline-delays">Delays</a>).
-</div>
-
-<p><strong>Consequence for modeling:</strong> if a subject hears the word "dog" at time $t$, the brain's BOLD response to "dog" appears at roughly $t + 4$ to $t + 8$ seconds. This is why we need the <code>make_delayed</code> function: it gives the ridge regression access to features from 2, 4, 6, and 8 seconds before each BOLD measurement.</p>
-
-
-<h2 id="embeddings">Text Embeddings</h2>
-
-<p>An embedding converts a word (or subword) into a numerical vector. This is what allows us to use text as input to a regression model.</p>
-
-<h3 id="emb-static">Static Embeddings</h3>
-
-<div class="defn">
-  <span class="label">Bag of Words</span>
-  Simplest approach: represent each word as a one-hot or frequency vector. No word order, no semantics. Serves as a baseline.
-</div>
-
-<div class="defn">
-  <span class="label">Word2Vec</span>
-  Learns embeddings from local context windows using a shallow neural network. Two variants: CBOW (predict target from neighbors) and Skip-gram (predict neighbors from target). Each word gets a fixed vector regardless of context. Pretrained versions are available (e.g., Google News 300d).
-</div>
-
-<div class="defn">
-  <span class="label">GloVe</span>
-  Global Vectors for Word Representation. Learns from word-word co-occurrence statistics across an entire corpus (not just local windows). Uses a log-bilinear regression model. Captures slightly different relationships than Word2Vec due to the global perspective. Also static: one vector per word.
-</div>
-
-<div class="watchout">Static embeddings assign the same vector to a word regardless of context. "Bank" has one representation whether it refers to a riverbank or a financial institution. This is a fundamental limitation for modeling how the brain processes language in context.</div>
-
-<h3 id="emb-bert">BERT</h3>
-
-<div class="defn">
-  <span class="label">BERT</span>
-  Bidirectional Encoder Representations from Transformers. A transformer-based model pretrained via masked language modeling (MLM). Unlike static embeddings, BERT produces <strong>contextual</strong> representations: the vector for each word depends on the surrounding words. Uses multi-head self-attention to capture relationships between all pairs of words in a sequence.
-</div>
-
-<p><strong>Key properties:</strong></p>
-<ul>
-  <li>Bidirectional: attends to both preceding and following words (unlike GPT, which is left-to-right only)</li>
-  <li>Max sequence length: 512 tokens. Long stories must be processed in overlapping windows</li>
-  <li>Uses WordPiece tokenizer, which splits rare words into subword units (no OOV problems)</li>
-  <li>Embeddings are typically extracted from the last hidden layer, with mean pooling over subwords</li>
-</ul>
-
-<div class="defn">
-  <span class="label">Masked Language Modeling (MLM)</span>
-  BERT's pretraining objective. 15% of tokens are selected, then: 80% are replaced with <code>[MASK]</code>, 10% with a random token, 10% unchanged. The model learns to predict the original tokens from context. Like a fill-in-the-blank test at massive scale.
-</div>
-
-<p><strong>Fine-tuning vs transfer learning:</strong></p>
-<ul>
-  <li><strong>Transfer learning:</strong> freeze BERT's weights, only train new layers on top (e.g., a classification head). Embeddings come from the frozen model</li>
-  <li><strong>Fine-tuning:</strong> allow BERT's weights to update during a second round of training on your specific data. More expressive but risks overfitting on small datasets</li>
-</ul>
-
-<h3 id="emb-lora">LoRA (Low-Rank Adaptation)</h3>
-
-<div class="defn">
-  <span class="label">LoRA</span>
-  A parameter-efficient fine-tuning method. In a transformer like BERT, each layer contains large weight matrices $W \in \mathbb{R}^{d_1 \times d_2}$ (e.g., the query projection in attention has $d_1 = d_2 = 768$). Full fine-tuning updates all entries of $W$, which means storing gradients for all ~110M parameters.
-  <br><br>
-  LoRA's key insight: the task-specific update $\Delta W$ probably doesn't need the full rank of the matrix. Instead, LoRA freezes $W$ and learns a low-rank factorization:
-  $$\Delta W = \frac{\gamma}{r} AB^\top, \qquad A \in \mathbb{R}^{d_1 \times r},\; B \in \mathbb{R}^{d_2 \times r}$$
-  where $r \ll \min(d_1, d_2)$ is the rank (e.g., $r = 4$ or $8$), and $\gamma$ is a scaling factor that controls the update magnitude (not to be confused with $\alpha_{\text{ridge}}$, the ridge regularization parameter). Only $A$ and $B$ are trained; the original $W$ stays frozen.
-</div>
-
-<p><strong>Low-rank intuition:</strong> a full $768 \times 768$ matrix has ~590K parameters per layer. A rank-4 factorization has only $768 \times 4 + 768 \times 4 = 6{,}144$ parameters, a 96% reduction. The assumption is that the "direction" BERT needs to shift for this task lives in a low-dimensional subspace, not the full parameter space. Think of it like PCA for weight updates: you only need a few principal directions to capture most of the adaptation.</p>
-
-<p><strong>Why LoRA for this lab?</strong> Full fine-tuning of BERT on ~24k words of story transcripts risks overfitting. LoRA's low parameter count acts as implicit regularization while still allowing the model to adapt its contextual representations to the narrative domain. Students fine-tune with LoRA on the MLM objective (same pretraining task, different data), then extract embeddings from the adapted model.</p>
-
-
-<h2 id="pipeline">The Modeling Pipeline</h2>
-
-<div id="pipeline-viz" style="background:var(--bg-alt);border-radius:8px;padding:1.25rem;margin:1.5rem 0;">
-<div style="font-weight:700;font-size:0.95rem;color:var(--accent);margin-bottom:1rem;">Illustrated Pipeline (with dimensions)</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 1</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Raw text (one story $s$)</div>
-<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:2px;">
-<span style="padding:3px 8px;border-radius:4px;font-size:0.8rem;background:var(--bg);border:1px solid var(--border);">the</span>
-<span style="padding:3px 8px;border-radius:4px;font-size:0.8rem;background:var(--bg);border:1px solid var(--border);">quick</span>
-<span style="padding:3px 8px;border-radius:4px;font-size:0.8rem;background:var(--bg);border:1px solid var(--border);">brown</span>
-<span style="padding:3px 6px;font-size:0.8rem;color:var(--text-muted);">...</span>
-<span style="padding:3px 8px;border-radius:4px;font-size:0.8rem;background:var(--bg);border:1px solid var(--border);">end</span>
-</div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$W_s \approx 800$ words with onset timestamps</div>
-</div>
-</div>
-
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ embed (Word2Vec / GloVe / BERT)</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 2</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Word embeddings $E$</div>
-<div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(10,5px);border:1px solid var(--border);border-radius:3px;overflow:hidden;" id="viz-e1"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$E \in \mathbb{R}^{W_s \times p}$ (e.g., $800 \times 768$) — each row = one word's embedding vector</div>
-</div>
-</div>
-
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ Lanczos downsample to scanner acquisition rate</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 3</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Downsampled $E'$</div>
-<div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(4,5px);border:1px solid var(--border);border-radius:3px;overflow:hidden;" id="viz-e2"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$E' \in \mathbb{R}^{T_s \times p}$ (e.g., $241 \times 768$) — fewer rows, same columns</div>
-</div>
-</div>
-
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ <code>make_delayed([1,2,3,4])</code> — concatenate shifted copies</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 4</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Delayed features $X_{\text{story}}$</div>
-<div style="display:flex;">
-<div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(4,5px);border:1px solid var(--border);border-radius:3px 0 0 3px;overflow:hidden;" id="viz-d1"></div>
-<div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(4,5px);border:1px solid var(--border);border-left:none;overflow:hidden;" id="viz-d2"></div>
-<div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(4,5px);border:1px solid var(--border);border-left:none;overflow:hidden;" id="viz-d3"></div>
-<div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(4,5px);border:1px solid var(--border);border-left:none;border-radius:0 3px 3px 0;overflow:hidden;" id="viz-d4"></div>
-</div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$X_{\text{story}} \in \mathbb{R}^{T_s \times 4p}$ (e.g., $241 \times 3072$) — 4 colors = 4 delay copies</div>
-</div>
-</div>
-
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ trim edges + stack all training stories</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 5</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:4px;">Combine features with fMRI response (one subject)</div>
-<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-<div>
-<div style="display:inline-grid;grid-template-columns:repeat(24,4px);grid-template-rows:repeat(14,4px);border:1px solid var(--border);border-radius:3px;overflow:hidden;" id="viz-X"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$X \in \mathbb{R}^{T \times 4p}$</div>
-</div>
-<div style="font-size:0.82rem;color:var(--text-muted);">paired with</div>
-<div>
-<div style="display:inline-grid;grid-template-columns:repeat(36,3px);grid-template-rows:repeat(14,4px);border:1px solid var(--border);border-radius:3px;overflow:hidden;" id="viz-Y"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$Y \in \mathbb{R}^{T \times V_j}$ ($V_j = 94{,}251$)</div>
-</div>
-</div>
-</div>
-</div>
-
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ ridge: $\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y$ — inverted once, applied to all $V_j$ columns</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 6</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Weight matrix $\hat{B}$</div>
-<div style="display:inline-grid;grid-template-columns:repeat(36,3px);grid-template-rows:repeat(8,4px);border:1px solid var(--border);border-radius:3px;overflow:hidden;" id="viz-B"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$\hat{B} \in \mathbb{R}^{4p \times V_j}$ — each column $\hat{\beta}_i$ = one voxel's learned weights</div>
-</div>
-</div>
-
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ predict on test story: $\hat{Y}_{\text{test}} = X_{\text{test}} \hat{B}$, evaluate $r_i = \mathrm{corr}(y_i, \hat{y}_i)$ per voxel</div>
-
-<div style="display:flex;align-items:flex-start;gap:16px">
-<div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 7</div>
-<div style="flex:1">
-<div style="font-weight:600;font-size:0.95rem;margin-bottom:4px;">Pearson CC per voxel ($r_i$)</div>
-<div style="display:flex;gap:1px;align-items:flex-end;height:40px;" id="viz-cc"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;">Most voxels have $r_i \approx 0$ (gray). Language-responsive voxels reach $r_i \sim 0.3\text{-}0.5$ (gold).</div>
-</div>
-</div>
-
-</div>
-
-<script>
-(function(){
-var teal=['#E1F5EE','#9FE1CB','#5DCAA5','#1D9E75'];
-var blue=['#E6F1FB','#B5D4F4','#85B7EB','#378ADD'];
-var purple=['#EEEDFE','#CECBF6','#AFA9EC','#7F77DD'];
-var pink=['#FBEAF0','#F4C0D1','#ED93B1','#D4537E'];
-var coral=['#FAECE7','#F5C4B3','#F0997B','#D85A30'];
-function r(a){return a[Math.floor(Math.random()*a.length)]}
-function fill(id,rows,cols,fn){var g=document.getElementById(id);if(!g)return;for(var i=0;i<rows*cols;i++){var d=document.createElement('div');d.style.cssText='width:100%;height:100%;background:'+fn();g.appendChild(d);}}
-fill('viz-e1',10,20,function(){return r(teal)});
-fill('viz-e2',4,20,function(){return r(teal)});
-fill('viz-d1',4,20,function(){return r(teal)});
-fill('viz-d2',4,20,function(){return r(blue)});
-fill('viz-d3',4,20,function(){return r(purple)});
-fill('viz-d4',4,20,function(){return r(pink)});
-fill('viz-X',14,24,function(){return r(blue)});
-fill('viz-Y',14,36,function(){return r(coral)});
-fill('viz-B',8,36,function(){return r(purple)});
-var cc=document.getElementById('viz-cc');
-if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random()*0.05:0.05+Math.random()*0.35);vals.sort(function(a,b){return a-b});vals.forEach(function(v){var d=document.createElement('div');d.style.cssText='width:3px;height:'+Math.max(2,v*80)+'px;border-radius:1px;background:'+(v>0.15?'#d4a76a':'#b4b2a9');cc.appendChild(d);});}
-})();
-</script>
-
-<h3 id="pipeline-downsample">Step 1: Lanczos Downsampling</h3>
-
-<p>Words occur at irregular intervals (~3 per second on average, but varying). The fMRI scanner captures snapshots at regular intervals (every TR $\approx$ 2 seconds). We need to convert from "one embedding per word, at irregular times" to "one embedding per timepoint, at regular times." This is not simply selecting a subset of words: it is <strong>interpolation onto a new time grid</strong>.</p>
-
-<div class="defn">
-  <span class="label">What downsampling does</span>
-  Think of each word embedding as a point in time: word $k$ has embedding vector $e_k \in \mathbb{R}^p$ at onset time $t_k^{\text{word}}$. We want an embedding vector at each scanner timepoint $t_n^{\text{scan}}$ (for $n = 1, \ldots, T_s$). The Lanczos filter computes a <strong>weighted average</strong> of nearby word embeddings:
-  $$E'(t_n^{\text{scan}}) = \sum_{k=1}^{W_s} w_{nk} \cdot e_k$$
-  where the weights $w_{nk}$ depend on how close word $k$'s onset time is to scanner timepoint $n$. Words spoken near $t_n^{\text{scan}}$ get high weight; words spoken far from $t_n^{\text{scan}}$ get near-zero weight. The Lanczos kernel (a windowed sinc function) determines the exact weights, with a window parameter controlling how many nearby words contribute (default: 3 lobes).
-  <br><br>
-  <strong>Dimensions:</strong> story $s$ has $W_s$ words and $T_s$ scanner timepoints. The raw embedding matrix $E \in \mathbb{R}^{W_s \times p}$ becomes $E' \in \mathbb{R}^{T_s \times p}$. Each row of $E'$ is a weighted blend of the rows of $E$.
-</div>
-
-<p><strong>Example:</strong> for a story with $W_s = 800$ words and $T_s = 241$ timepoints, a BERT embedding ($p = 768$) goes from $800 \times 768$ to $241 \times 768$. If three words were spoken during the 2-second interval around timepoint $n$, the embedding at timepoint $n$ is roughly an average of those three words' embeddings, with the word closest in time weighted most heavily.</p>
-
-<div class="watchout">Because each timepoint's embedding is a blend of several words, the model never sees a "pure" single-word signal. This matters for interpretation: when SHAP says "the word 'dog' is important for this voxel," it means that removing 'dog' changes the blended embeddings at the timepoints where 'dog' contributes, which in turn changes the predicted BOLD signal. The word-level attribution works because the SHAP/LIME wrapper re-runs the full pipeline (including downsampling) for each text perturbation, so the effect of removing a single word propagates naturally through the blending step.</div>
-
-<h3 id="pipeline-delays">Step 2: Temporal Delays</h3>
-
-<p>Due to the HRF, the brain's response to a word heard at time $t$ appears in the fMRI data at approximately $t + 4$ to $t + 8$ seconds. The function <code>make_delayed(stim, delays=[1,2,3,4])</code> accounts for this.</p>
-
-<div class="defn">
-  <span class="label">Delayed Feature Matrix</span>
-  Starting from the downsampled embedding $E' \in \mathbb{R}^{T_s \times p}$, create shifted copies at delays of 1, 2, 3, and 4 TR intervals and concatenate horizontally:
-  $$X_{\text{story}} = [E'_{t-1},\; E'_{t-2},\; E'_{t-3},\; E'_{t-4}] \in \mathbb{R}^{T_s \times 4p}$$
-  Row $t$ contains the embedding features from 1, 2, 3, and 4 TR intervals before timepoint $t$. Early rows are zero-padded (there are no words before the story starts).
-  <br><br>
-  <strong>Example:</strong> Word2Vec ($p = 300$) becomes $T_s \times 1200$. BERT ($p = 768$) becomes $T_s \times 3072$.
-</div>
-
-<p><strong>Why these specific delays?</strong> The HRF peaks at 4-6 seconds post-stimulus. With TR $\approx$ 2s, delays of 1-4 TR intervals correspond to 2, 4, 6, and 8 seconds. The ridge regression learns a weight for each delay at each voxel, effectively fitting the HRF shape per voxel. Some voxels respond faster (more weight on delay 1-2), others slower (more weight on delay 3-4).</p>
-
-<h3>Step 3: Trimming</h3>
-
-<p>Remove the first 5 timepoints (~10 seconds) and last 10 timepoints (~20 seconds) from both the delayed embedding matrix $X_{\text{story}}$ and the corresponding BOLD response columns. This eliminates onset/offset artifacts: the scanner is stabilizing, the subject may not yet be attending, and the hemodynamic response needs time to ramp up. After trimming, a story with $T_s = 241$ timepoints becomes $T_s - 15 = 226$ usable timepoints.</p>
-
-<p><strong>Stacking stories:</strong> after trimming, the per-story matrices are vertically concatenated across all training stories to form the full design matrix $X \in \mathbb{R}^{T \times 4p}$ and response matrix $Y \in \mathbb{R}^{T \times V}$, where $T = \sum_s (T_s - 15) \approx 23{,}000$ is the total number of usable timepoints across all stories. This is where the notation switches from $T_s$ (per-story) to $T$ (all stories stacked).</p>
-
-<div class="watchout">A note on trimming from a previous semester: the lab instructions say trim 5 timepoints at the start and 10 at the end, but because the stimulus TR times start at $-9$s (padding for HRF lag), trimming 10 timepoints at the start and 5 at the end may yield better correlations. The Huth lab's own tutorial code uses <code>[5+trim:-trim]</code> indexing consistent with 10-start/5-end. The key principle is that X and Y must be aligned after trimming: however many timepoints you remove, remove them from the same positions in both matrices. Either approach is defensible as long as it is clearly justified in the report. If your group has already implemented one approach for 3.1, stick with it.</div>
-
-<h3 id="pipeline-ridge">Step 4: Ridge Regression</h3>
-
-<p>We now have all the ingredients. Let's be explicit about dimensions and notation. The approach is sometimes called "mass-univariate" in the neuroimaging literature, meaning we fit one independent regression model per voxel (~94k models), all sharing the same feature matrix $X$ but with different target columns $y_i$.</p>
-
-<div class="defn">
-  <span class="label">Setup and Notation</span>
-  Fix a subject $j \in \{2, 3\}$. Let $p$ denote the embedding dimension (e.g., $p = 300$ for Word2Vec, $p = 768$ for BERT). After applying delays with lags 1 through 4, the feature dimension becomes $4p$. Let $V_j$ denote the number of voxels for subject $j$ ($V_2 = 94{,}251$, $V_3 = 95{,}556$). Let $T$ denote the total number of timepoints across all training stories (after trimming).
-  <br><br>
-  <strong>Design matrix (shared across voxels):</strong>
-  $$X \in \mathbb{R}^{T \times 4p}$$
-  Row $t$ of $X$ is $x(t)^\top$, the delayed embedding vector at time $t$. This matrix is the same for every voxel: it depends only on the text and the embedding method, not on which voxel we are predicting.
-  <br><br>
-  <strong>Response matrix (one column per voxel):</strong>
-  $$Y \in \mathbb{R}^{T \times V_j}$$
-  Column $i$ of $Y$ is the BOLD time series $y_i = (y_i(1), \ldots, y_i(T))^\top$ at voxel $i$. This is the fMRI data.
-</div>
-
-<div class="defn">
-  <span class="label">The Model (per voxel)</span>
-  For each voxel $i = 1, \ldots, V_j$, we fit a separate ridge regression:
-  $$\hat{\beta}_i = \arg\min_{\beta \in \mathbb{R}^{4p}} \|y_i - X\beta\|_2^2 + \alpha_{\text{ridge}} \|\beta\|_2^2$$
-  The predicted BOLD signal at voxel $i$ and time $t$ is:
-  $$\hat{y}_i(t) = x(t)^\top \hat{\beta}_i$$
-  Each voxel gets its own weight vector $\hat{\beta}_i \in \mathbb{R}^{4p}$, learned from the same design matrix $X$ but a different target column $y_i$. Intuitively, the weights encode which embedding features (and at which time lags) are predictive of activity at that specific brain location.
-</div>
-
-<div class="defn">
-  <span class="label">Efficient Joint Solution</span>
-  Although each voxel has its own $\hat{\beta}_i$, we can solve all $V_j$ regressions at once:
-  $$\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y \in \mathbb{R}^{4p \times V_j}$$
-  Column $i$ of $\hat{B}$ is $\hat{\beta}_i$. The key insight: $X^\top X + \alpha_{\text{ridge}} I$ is inverted only once (it doesn't depend on $i$), then multiplied by each column of $Y$. This is why the computation is feasible despite fitting ~94k separate regressions.
-</div>
-
-<p><strong>Cross-validation:</strong> leave-one-story-out (LOSO). Train on all stories except one, predict on the held-out story. The regularization parameter $\alpha_{\text{ridge}}$ is selected via grid search. The incremental approach (precompute global $X^\top X$ and $X^\top Y$, subtract each story's contribution) avoids reprocessing all training data per fold.</p>
-
-<div class="defn">
-  <span class="label">Evaluation</span>
-  On a held-out test story with $T_{\text{test}}$ timepoints, the predicted BOLD at voxel $i$ is $\hat{y}_i^{\text{test}} = X_{\text{test}} \hat{\beta}_i \in \mathbb{R}^{T_{\text{test}}}$. Model performance at voxel $i$ is the Pearson correlation:
-  $$r_i = \mathrm{corr}(y_i^{\text{test}}, \hat{y}_i^{\text{test}})$$
-  We report aggregate statistics across all voxels: mean CC, median CC, top 1% CC, and top 5% CC. Most voxels will have $r_i \approx 0$ (they are not involved in language processing), while a subset of language-responsive voxels will show meaningful correlations.
-</div>
-
-<div class="watchout">Memory is the main computational bottleneck. The $X$ matrix ($T \times 4p$) is manageable, but $Y$ ($T \times 94{,}000$) in float64 is ~18 GB across all stories. Practical solutions: cast to <code>float32</code> (halves memory), use memory-mapped loading (<code>np.load(..., mmap_mode='r')</code>), and process voxels in batches rather than all at once. Students who completed 3.1 should already have a working pipeline for this.</div>
-
-<h3>Why Ridge Regression?</h3>
-
-<p>The choice of ridge (L2-penalized linear regression) is deliberate and worth understanding. Several properties of this problem make ridge particularly well-suited:</p>
-
-<div class="defn">
-  <span class="label">Why Ridge Works Here</span>
-  <strong>High-dimensional features, limited samples.</strong> With BERT embeddings and 4 delays, the feature dimension is $4p = 3{,}072$. With ~100 training stories at ~230 timepoints each, $T \approx 23{,}000$. So $T > 4p$, but not by a huge margin, and the delayed features are highly correlated with each other (lag 1 and lag 2 of the same embedding are nearly identical). OLS would overfit badly due to this multicollinearity. Ridge's L2 penalty shrinks correlated coefficients jointly, stabilizing the solution.
-  <br><br>
-  <strong>Closed-form solution.</strong> $\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y$ is computed once and applied to all 94k voxels. No iterative optimization needed. This makes it feasible to fit ~94k models in reasonable time.
-  <br><br>
-  <strong>The nonlinearity is in the embeddings, not the regression.</strong> The encoding model is conceptually $f = g \circ h$, where $g$ is the nonlinear embedding (Word2Vec, BERT, etc.) and $h$ is the linear ridge map. All the representational power comes from $g$; the linear $h$ just projects embeddings onto voxel responses. This is the standard "linearized model" approach in computational neuroscience (Huth et al., 2016).
-</div>
-
-<div class="defn">
-  <span class="label">Alternatives and Tradeoffs</span>
-  <strong>OLS (no regularization):</strong> would overfit due to multicollinearity from delayed features. Numerically unstable when $X^\top X$ is near-singular. Not viable here.
-  <br><br>
-  <strong>Lasso (L1 penalty):</strong> would produce sparse weight vectors (most coefficients exactly zero). Potentially more interpretable per-voxel, but: (a) much slower to fit (no closed-form, requires iterative optimization per voxel), (b) sparsity assumption may not hold (brain responses likely depend on many embedding dimensions, not just a few), and (c) L1 is unstable when features are correlated (which ours are, due to delays).
-  <br><br>
-  <strong>Elastic net (L1 + L2):</strong> compromise between ridge and lasso. Could work but adds a hyperparameter and is slower than pure ridge.
-  <br><br>
-  <strong>Nonlinear models (neural networks, random forests):</strong> in principle could capture nonlinear relationships between embeddings and BOLD. In practice: fMRI data is noisy and limited ($T \approx 23{,}000$ samples), so nonlinear models tend to overfit without strong regularization. The linearized approach (nonlinear embedding + linear map) is the standard in the field because it provides a good bias-variance tradeoff for this data regime.
-</div>
-
-
-<h2 id="interp">Interpretation (Lab 3.3)</h2>
-
-<p>The ridge regression weights $\hat{\beta}_i \in \mathbb{R}^{4p}$ are not directly interpretable as "which words matter." The fundamental reason is the embedding space: each dimension of a BERT embedding doesn't correspond to an identifiable linguistic concept, so a weight on dimension 437 of delay 2 has no human-readable meaning. (If we had used one-hot bag-of-words embeddings, each weight would directly measure how much a specific word increases predicted BOLD at that voxel, but we lose this with distributed representations.) Ridge's L2 shrinkage adds a secondary complication by distributing weight across correlated features, but the core issue is the embedding space itself. To get word-level interpretations, we use post-hoc attribution methods.</p>
-
-<h3 id="interp-shap">SHAP</h3>
-
-<div class="defn">
-  <span class="label">SHAP (SHapley Additive exPlanations)</span>
-  Grounded in cooperative game theory. Assigns each input feature (word) a contribution to the model's prediction based on Shapley values: the average marginal contribution of the feature across all possible coalitions. For BERT models, uses a partition explainer that replaces words with <code>[MASK]</code> tokens, preserving positional structure while removing semantic content.
-</div>
-
-<p><strong>Properties:</strong> theoretically consistent (additive, symmetric), captures non-linear interactions via the attention mechanism, but computationally expensive. Tends to highlight function words and discourse markers (structural scaffolding).</p>
-
-<h3 id="interp-lime">LIME</h3>
-
-<div class="defn">
-  <span class="label">LIME (Local Interpretable Model-agnostic Explanations)</span>
-  Assumes the model is approximately linear in a small neighborhood of the input. Generates perturbed inputs by randomly deleting words, records prediction changes, then fits a sparse linear surrogate model. The surrogate's weights serve as feature importance scores.
-</div>
-
-<p><strong>Properties:</strong> model-agnostic, fast, but the perturbation mechanism (deletion) alters temporal structure, which can be problematic for position-sensitive transformer models. Tends to highlight content words (semantically rich terms).</p>
-
-<div class="watchout">The lab requires both SHAP and LIME. A key insight: they highlight <em>different types</em> of words because their perturbation mechanisms differ (masking vs deletion). Words important under both methods provide higher confidence. Only run interpretation on well-predicted voxels: this is the "P" in PCS. Interpreting a model that doesn't predict well is meaningless.</div>
-
-<h3>The Wrapper Pattern (how to make SHAP/LIME work here)</h3>
-
-<p><strong>The problem:</strong> SHAP and LIME expect a function <code>f(text) → prediction</code>. But our model is a ridge regression on delayed, downsampled embeddings, not on raw text. How do we bridge this gap?</p>
-
-<p><strong>The solution:</strong> build a wrapper class that encapsulates the entire pipeline. SHAP/LIME perturb text (masking or deleting words), pass each perturbed version through the wrapper, and observe how the prediction changes.</p>
-
-<pre><code>class fMRI_Predictor:
-    def __init__(self, ridge_model, tokenizer, bert_model,
-                 data_times, tr_times, voxel_index):
-        # Store all pipeline components
-        ...
-
-    def predict(self, texts):
-        # texts: list of strings (perturbed versions from SHAP/LIME)
-        predictions = []
-        for text in texts:
-            words = text.split()
-            embeddings = get_bert_embeddings(words)  # re-embed
-            downsampled = lanczos_downsample(embeddings)
-            delayed = make_delayed(downsampled, [1,2,3,4])
-            pred = self.ridge_model.predict(delayed)
-            predictions.append(pred[:, self.voxel_index].mean())
-        return np.array(predictions)</code></pre>
-
-<p>Then hand the wrapper to the explainers:</p>
-
-<pre><code># SHAP: masks words with [MASK], preserving position
-masker = shap.maskers.Text(r"\s+", mask_token="[MASK]")
-explainer = shap.Explainer(predictor.predict, masker)
-shap_values = explainer([text_input])
-
-# LIME: deletes words, fits local linear surrogate
-lime_explainer = LimeTextExplainer()
-exp = lime_explainer.explain_instance(
-    text_input, predictor.predict, num_features=10)</code></pre>
-
-<p><strong>Key difference in perturbation:</strong> SHAP replaces words with <code>[MASK]</code>, so BERT still sees a token at that position (preserving positional structure). LIME deletes words entirely, changing the sequence length and shifting all subsequent positions. This is why they tend to highlight different types of words: SHAP captures positional/structural importance, LIME captures semantic content importance.</p>
-
-<p><strong>Practical note:</strong> this is slow because every perturbation requires a full forward pass through BERT + the preprocessing pipeline. For LIME with <code>num_samples=100</code>, that's 100 BERT forward passes per voxel. Run this on GPU via <code>sbatch</code>, not the login node.</p>
-
-
-<h2 id="pcs">PCS Framework</h2>
-
-<p>Bin Yu's framework for veridical data science. All three components apply to this lab:</p>
-
-<div class="defn">
-  <span class="label">Predictability</span>
-  Does the model predict well on held-out data? Evaluate via CC on test stories. Only interpret voxels where the model actually predicts well: the "P" in PCS is a prerequisite for meaningful "S" and interpretation.
-</div>
-
-<div class="defn">
-  <span class="label">Computability</span>
-  Can you actually compute the answer? Memory management on Bridges-2, efficient ridge regression, managing 50GB of fMRI data: these are computability challenges. If the kernel crashes, you have a computability problem.
-</div>
-
-<div class="defn">
-  <span class="label">Stability</span>
-  Do conclusions change under perturbations? Several levels of stability to test:
-  <br><br>
-  <strong>Input stability (embedding robustness):</strong> perturb the story text (typos, synonym substitution, random word replacement) and measure how much the embeddings change. Static embeddings (Word2Vec, GloVe) are robust but insensitive; BERT is sensitive but captures real semantic shifts.
-  <br><br>
-  <strong>Inference stability (interpretation robustness):</strong> shift the analysis time window slightly (e.g., TR 100-120 vs TR 102-122, a ~4 second shift) and compare the top SHAP/LIME words. Measure overlap with Jaccard similarity:
-  $$J(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
-  where $A$ and $B$ are the top-10 word sets from each window. High Jaccard (e.g., $\geq 0.5$) means the interpretation is stable; low Jaccard means the "important words" are artifacts of the exact window choice.
-  <br><br>
-  <strong>Cross-subject stability:</strong> do the same voxel regions show high CC in both subjects? (Limited by the fact that voxels don't map one-to-one across subjects.)
-  <br><br>
-  <strong>Cross-embedding stability:</strong> do different embedding methods identify the same top voxels? Measure via Jaccard on top-5% voxel sets across methods.
-</div>
-
-
-<h2 id="data">Data Summary</h2>
-
-<table class="comparison-table">
-  <tr><th></th><th>Subject 2</th><th>Subject 3</th></tr>
-  <tr><td>Story files</td><td>101 (.npy)</td><td>101 (.npy)</td></tr>
-  <tr><td>Voxels (V)</td><td>94,251</td><td>95,556</td></tr>
-  <tr><td>Data type</td><td>float64</td><td>float64</td></tr>
-  <tr><td>Directory size</td><td>~25 GB</td><td>~25 GB</td></tr>
-  <tr><td>Per-story file size</td><td>~174 MB</td><td>~177 MB</td></tr>
-  <tr><td>Timepoints per story (example)</td><td>241</td><td>241</td></tr>
+<p class="p1"><span class="s1">🌙</span></p>
+<h1 style="margin: 0.0px 0.0px 3.0px 0.0px; font: 21.6px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Lab 3 Reference Guide</span></h1>
+<p class="p3"><span class="s2">Stat 214 — Connecting Language to fMRI · Spring 2026</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Overview</span></h2>
+<p class="p5"><span class="s2">Subjects listen to podcast stories while an fMRI scanner records brain activity every 2 seconds at ~94,000 voxels. We build encoding models: text embeddings in, predicted BOLD signal out.</span></p>
+<p class="p6"><span class="s1">NOTATION USED THROUGHOUT THIS GUIDE</span></p>
+<table cellspacing="0" cellpadding="0" class="t1">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p7"><span class="s1">SYMBOL</span></p>
+      </td>
+      <td valign="middle" class="td2">
+        <p class="p7"><span class="s1">MEANING</span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p7"><span class="s1">TYPICAL VALUE</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$j$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Subject index</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$j \in \{2, 3\}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$s$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Story index</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$s = 1, \ldots, 101$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$i$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Voxel index</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$i = 1, \ldots, V_j$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$t$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Timepoint index (within a story or stacked)</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p9"><span class="s2"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$W_s$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Number of words in story $s$</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\sim 800$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$p$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Embedding dimension</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$300$ (Word2Vec), $768$ (BERT)</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$T_s$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Number of timepoints for story $s$ (before trimming)</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\sim 241$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$T$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Total timepoints across all training stories (after trimming)</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\approx 23{,}000$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$V_j$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Number of voxels for subject $j$</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$94{,}251$ (subj 2), $95{,}556$ (subj 3)</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$E$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Raw word embedding matrix for one story</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\in \mathbb{R}^{W_s \times p}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$E'$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Downsampled embedding matrix (at scanner rate)</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\in \mathbb{R}^{T_s \times p}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$X$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Design matrix (delayed features, stacked across stories)</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\in \mathbb{R}^{T \times 4p}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$Y$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">BOLD response matrix (stacked across stories, one subject)</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\in \mathbb{R}^{T \times V_j}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$\hat{B}$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Ridge weight matrix (all voxels). Column $i$ is $\hat{\beta}_i$</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\in \mathbb{R}^{4p \times V_j}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$\hat{\beta}_i$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Weight vector for voxel $i$</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">$\in \mathbb{R}^{4p}$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$\alpha_{\text{ridge}}$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Ridge regularization parameter</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p8"><span class="s1">selected via CV</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td4">
+        <p class="p8"><span class="s1">$r_i$</span></p>
+      </td>
+      <td valign="middle" class="td5">
+        <p class="p8"><span class="s1">Pearson CC for voxel $i$ on test story</span></p>
+      </td>
+      <td valign="middle" class="td6">
+        <p class="p9"><span class="s2"></span><br></p>
+      </td>
+    </tr>
+  </tbody>
 </table>
-
-<p><strong>Transcripts:</strong> <code>raw_text.pkl</code> contains 109 stories (superset of fMRI stories). Each story is a <code>DataSequence</code> object with: word tokens (<code>data</code>), word onset times (<code>data_times</code>), and TR times (<code>tr_times</code>). Loading requires <code>ridge_utils</code> on the Python path.</p>
-
-<p><strong>Memory math:</strong> full Subject 2 in float64 $\approx$ 18 GB; in float32 $\approx$ 9 GB; single story in float32 $\approx$ 87 MB.</p>
-
-
-<h2 id="infra">Infrastructure</h2>
-
-<h3>Bridges-2 (PSC)</h3>
-<p>Pittsburgh Supercomputing Center HPC cluster. Data at: <code>/ocean/projects/mth250011p/shared/215a/final_project/data</code>. Shared storage: 512 GB for the whole class (provisioning an additional 512 GB). Always submit jobs via <code>sbatch</code>, not the login node. Request memory explicitly (e.g., <code>--mem=64G</code>).</p>
-
-<h3>SCF (Berkeley Stats)</h3>
-<p>Stats Computing Facility, local alternative. Data mirrored at: <code>/scratch/users/s214/lab3</code>. Some students have reported permission issues accessing this path.</p>
-
-<h3>Common Student Pain Points</h3>
-<ul>
-  <li><strong>Kernel crashes:</strong> usually running on the login node instead of submitting via <code>sbatch</code>, or insufficient memory allocation</li>
-  <li><strong>Memory:</strong> use <code>float32</code>, memory-mapped loading, process voxels in batches. Bag-of-words embeddings are sparse and should be stored in compressed format (<code>scipy.sparse</code>), but Word2Vec, GloVe, and BERT embeddings are dense</li>
-  <li><strong>Storage:</strong> do not store unnecessarily large files. Use HuggingFace (100GB free) for sharing within groups. Compress where possible</li>
-  <li><strong>Permissions:</strong> ensure GitHub org and classroom invitations are accepted</li>
-</ul>
-
-
-<h2 id="timeline">Timeline &amp; Deadlines</h2>
-
-<table class="comparison-table">
-  <tr><th>Milestone</th><th>Due Date</th><th>What's Expected</th></tr>
-  <tr><td>Lab 3.1 check-in</td><td>April 10, 23:59</td><td>1-2 page PDF: BoW, Word2Vec, GloVe embeddings → ridge → CC results. At least one figure. Collaboration plan</td></tr>
-  <tr><td>Lab 3.2 check-in</td><td>April 24, 23:59</td><td>Pretrained BERT + fine-tuned BERT (LoRA) → ridge → comparison with 3.1 methods</td></tr>
-  <tr><td>Final report</td><td>May 8, 23:59</td><td>Full 20-page report covering all embeddings, modeling, SHAP/LIME interpretation, stability analysis. Push code to GitHub</td></tr>
+<p class="p10"><span class="s1">When working within a single subject (as we usually do), we drop the $j$ subscript and write $V$ for $V_j$.</span></p>
+<p class="p11"><span class="s3">The Full Pipeline</span></p>
+<p class="p12"><span class="s2">Raw text</span></p>
+<p class="p13"><span class="s3">→</span></p>
+<p class="p12"><span class="s2">Word embeddings</span></p>
+<p class="p13"><span class="s3">→</span></p>
+<p class="p12"><span class="s2">Lanczos downsample</span></p>
+<p class="p13"><span class="s3">→</span></p>
+<p class="p12"><span class="s2">Add delays (1-4 TR intervals)</span></p>
+<p class="p13"><span class="s3">→</span></p>
+<p class="p12"><span class="s2">Trim edges</span></p>
+<p class="p13"><span class="s3">→</span></p>
+<p class="p12"><span class="s2">Ridge regression</span></p>
+<p class="p13"><span class="s3">→</span></p>
+<p class="p12"><span class="s2">Predict BOLD</span></p>
+<p class="p10"><span class="s3">One model per subject. Ridge regression is fit with the same $X$ matrix across all ~94k voxels (different $y$ column per voxel). Evaluation: Pearson correlation between predicted and actual BOLD per voxel on held-out stories.</span></p>
+<p class="p6"><span class="s1">DIMENSIONS AT EACH STEP (ONE STORY, BERT, SUBJECT 2)</span></p>
+<table cellspacing="0" cellpadding="0" class="t1">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td7">
+        <p class="p7"><span class="s1">STEP</span></p>
+      </td>
+      <td valign="middle" class="td8">
+        <p class="p7"><span class="s1">OBJECT</span></p>
+      </td>
+      <td valign="middle" class="td9">
+        <p class="p7"><span class="s1">SHAPE</span></p>
+      </td>
+      <td valign="middle" class="td10">
+        <p class="p7"><span class="s1">NOTES</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Raw text</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">Word list</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$W_s$ words</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">e.g., $W_s \approx 800$ for a ~5 min story</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Embedding</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$E$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$W_s \times p$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">$p = 768$ for BERT, $300$ for Word2Vec</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Downsample</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$E'$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$T_s \times p$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">$T_s \approx 241$ timepoints for one story</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Add delays</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$X_{\text{story}}$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$T_s \times 4p$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">$4 \times 768 = 3072$ for BERT</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Trim</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$X_{\text{story}}$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$(T_s - 15) \times 4p$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">Remove first 5, last 10 timepoints</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Stack stories</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$X$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$T \times 4p$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">$T = \sum_s (T_s - 15) \approx 23{,}000$</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">BOLD response</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$Y$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$T \times V$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">$V = 94{,}251$ for subject 2</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Ridge solution</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$\hat{B}$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$4p \times V$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">One weight vector $\hat{\beta}_i$ per voxel (column)</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td11">
+        <p class="p8"><span class="s1">Prediction</span></p>
+      </td>
+      <td valign="middle" class="td12">
+        <p class="p8"><span class="s1">$\hat{Y}_{\text{test}}$</span></p>
+      </td>
+      <td valign="middle" class="td13">
+        <p class="p8"><span class="s1">$T_{\text{test}} \times V$</span></p>
+      </td>
+      <td valign="middle" class="td14">
+        <p class="p8"><span class="s1">Evaluate CC per column</span></p>
+      </td>
+    </tr>
+  </tbody>
 </table>
-
-
-<h2 id="ref">Quick Reference</h2>
-
-<div class="ref-table">
-  <div class="ref-title">Key Dimensions</div>
-  <div class="ref-item"><span class="ref-name">TR:</span> ~2.0045 seconds</div>
-  <div class="ref-item"><span class="ref-name">Voxels per subject:</span> ~94,000-96,000 (subject-native space)</div>
-  <div class="ref-item"><span class="ref-name">Stories:</span> 101 per subject (109 transcripts total)</div>
-  <div class="ref-item"><span class="ref-name">Total words:</span> ~23,800</div>
-  <div class="ref-item"><span class="ref-name">Word2Vec dim:</span> 300 (Google News pretrained)</div>
-  <div class="ref-item"><span class="ref-name">GloVe dim:</span> 50/100/200/300 (depending on version)</div>
-  <div class="ref-item"><span class="ref-name">BERT hidden dim:</span> 768 (bert-base-uncased)</div>
-  <div class="ref-item"><span class="ref-name">After delays (4×):</span> embedding dim × 4</div>
-</div>
-
-<div class="ref-table">
-  <div class="ref-title">Evaluation Metrics</div>
-  <div class="ref-item"><span class="ref-name">CC (Correlation Coefficient):</span> Pearson $r$ between predicted and actual BOLD, per voxel, on test story</div>
-  <div class="ref-item"><span class="ref-name">Mean CC:</span> primary model selection metric</div>
-  <div class="ref-item"><span class="ref-name">Top 1%/5% CC:</span> performance in the most language-responsive voxels</div>
-  <div class="ref-item"><span class="ref-name">Jaccard similarity:</span> overlap of top voxel sets across embedding methods</div>
-</div>
-
-<div class="ref-table">
-  <div class="ref-title">Key Code Functions (preprocessing.py)</div>
-  <div class="ref-item"><span class="ref-name"><code>downsample_word_vectors()</code>:</span> Lanczos-filter word embeddings from word rate to TR rate</div>
-  <div class="ref-item"><span class="ref-name"><code>make_delayed(stim, delays)</code>:</span> create time-lagged feature copies and concatenate horizontally</div>
-  <div class="ref-item"><span class="ref-name"><code>lanczosinterp2D()</code>:</span> low-level Lanczos interpolation (called by downsample)</div>
-</div>
-
-<div class="ref-table">
-  <div class="ref-title">Reference Paper</div>
-  <div class="ref-item">Jain &amp; Huth (2018). "Incorporating Context into Language Encoding Models for fMRI." NeurIPS 2018.</div>
-  <div class="ref-item">Uses LSTM language model (not BERT) but same data, same pipeline structure. Lab 3 updates the approach with transformer-based models.</div>
-</div>
-
-<script>
-function toggleTheme() {
-  const body = document.documentElement;
-  const current = body.getAttribute('data-theme');
-  const btn = document.querySelector('.theme-toggle');
-  if (current === 'dark') { body.removeAttribute('data-theme'); btn.textContent = '🌙'; }
-  else { body.setAttribute('data-theme', 'dark'); btn.textContent = '☀️'; }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  var sections = document.querySelectorAll('h2');
-  sections.forEach(function(h2) {
-    if (h2.id === 'overview') return;
-    h2.style.cursor = 'pointer';
-    h2.style.userSelect = 'none';
-    var indicator = document.createElement('span');
-    indicator.textContent = ' ▸';
-    indicator.style.fontSize = '0.8em';
-    indicator.style.opacity = '0.5';
-    indicator.className = 'collapse-indicator';
-    h2.appendChild(indicator);
-    
-    var next = h2.nextElementSibling;
-    while (next && next.tagName !== 'H2') {
-      next.style.display = 'none';
-      next = next.nextElementSibling;
-    }
-    
-    h2.addEventListener('click', function() {
-      var next = h2.nextElementSibling;
-      var isCollapsed = next && next.style.display === 'none';
-      while (next && next.tagName !== 'H2') {
-        next.style.display = isCollapsed ? '' : 'none';
-        next = next.nextElementSibling;
-      }
-      indicator.textContent = isCollapsed ? ' ▾' : ' ▸';
-    });
-  });
-
-  var expandBtn = document.createElement('button');
-  expandBtn.textContent = 'Expand all';
-  expandBtn.style.cssText = 'position:fixed;bottom:1rem;right:1rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text-muted);z-index:100;font-family:inherit;';
-  var allExpanded = false;
-
-  sections.forEach(function(h2) {
-    if (h2.id === 'overview') return;
-    var next = h2.nextElementSibling;
-    while (next && next.tagName !== 'H2') {
-      next.style.display = 'none';
-      next = next.nextElementSibling;
-    }
-    var ind = h2.querySelector('.collapse-indicator');
-    if (ind) ind.textContent = ' ▸';
-  });
-
-  expandBtn.addEventListener('click', function() {
-    var sections = document.querySelectorAll('h2');
-    sections.forEach(function(h2) {
-      if (h2.id === 'overview') return;
-      var next = h2.nextElementSibling;
-      while (next && next.tagName !== 'H2') {
-        next.style.display = allExpanded ? 'none' : '';
-        next = next.nextElementSibling;
-      }
-      var ind = h2.querySelector('.collapse-indicator');
-      if (ind) ind.textContent = allExpanded ? ' ▸' : ' ▾';
-    });
-    allExpanded = !allExpanded;
-    expandBtn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
-  });
-  document.body.appendChild(expandBtn);
-});
-</script>
-
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Neuroimaging Terms</span></h2>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">fMRI and the BOLD Signal</span></h3>
+<p class="p6"><span class="s1">FMRI</span></p>
+<p class="p15"><span class="s2">Functional Magnetic Resonance Imaging. Measures brain activity indirectly by detecting changes in blood oxygenation. Does not measure neural firing directly: it captures the hemodynamic consequences of neural activity.</span></p>
+<p class="p6"><span class="s1">BOLD SIGNAL</span></p>
+<p class="p15"><span class="s2">Blood-Oxygen-Level-Dependent signal. When neurons fire, local blood flow increases and the ratio of oxygenated to deoxygenated hemoglobin shifts. This change is what fMRI detects. The BOLD signal is a proxy for neural activity, not the activity itself.</span></p>
+<p class="p6"><span class="s1">VOXEL</span></p>
+<p class="p15"><span class="s2">A volumetric pixel: a tiny 3D cube of brain tissue (~2mm per side in this experiment). Each subject has approximately 94,000 voxels. Think of each voxel as one spatial "measurement point" in the brain. The data for one story $s$ and one subject $j$ is a matrix $Y \in \mathbb{R}^{T_s \times V_j}$, where $T_s$ is the number of timepoints for that story and $V_j$ is the number of voxels for that subject ($V_2 = 94{,}251$, $V_3 = 95{,}556$). Each subject has a different voxel count because brains differ in size and shape. We fit entirely separate models per subject: no data is shared across subjects.</span></p>
+<p class="p6"><span class="s1">TR (REPETITION TIME)</span></p>
+<p class="p15"><span class="s2">The time interval between consecutive fMRI scans: TR $\approx$ 2.0045 seconds in this experiment. Every TR interval, the scanner captures one full-brain snapshot (called a volume or timepoint). A 10-minute story yields roughly 300 timepoints. We use $T_s$ to denote the number of timepoints for story $s$.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Hemodynamic Response</span></h3>
+<p class="p6"><span class="s1">HRF (HEMODYNAMIC RESPONSE FUNCTION)</span></p>
+<p class="p15"><span class="s2">The BOLD signal does not spike instantly when neurons fire. It peaks approximately 4-6 seconds after the neural event and takes ~15 seconds to return to baseline. This lag is the hemodynamic response function. The pipeline accounts for this by adding time-lagged copies of the features (see </span><span class="s4">Delays</span><span class="s2">).</span></p>
+<p class="p5"><span class="s2">Consequence for modeling: if a subject hears the word "dog" at time $t$, the brain's BOLD response to "dog" appears at roughly $t + 4$ to $t + 8$ seconds. This is why we need the </span><span class="s5">make_delayed</span><span class="s2"> function: it gives the ridge regression access to features from 2, 4, 6, and 8 seconds before each BOLD measurement.</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Text Embeddings</span></h2>
+<p class="p5"><span class="s2">An embedding converts a word (or subword) into a numerical vector. This is what allows us to use text as input to a regression model.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Static Embeddings</span></h3>
+<p class="p6"><span class="s1">BAG OF WORDS</span></p>
+<p class="p15"><span class="s2">Simplest approach: represent each word as a one-hot or frequency vector. No word order, no semantics. Serves as a baseline.</span></p>
+<p class="p6"><span class="s1">WORD2VEC</span></p>
+<p class="p15"><span class="s2">Learns embeddings from local context windows using a shallow neural network. Two variants: CBOW (predict target from neighbors) and Skip-gram (predict neighbors from target). Each word gets a fixed vector regardless of context. Pretrained versions are available (e.g., Google News 300d).</span></p>
+<p class="p6"><span class="s1">GLOVE</span></p>
+<p class="p15"><span class="s2">Global Vectors for Word Representation. Learns from word-word co-occurrence statistics across an entire corpus (not just local windows). Uses a log-bilinear regression model. Captures slightly different relationships than Word2Vec due to the global perspective. Also static: one vector per word.</span></p>
+<p class="p16"><span class="s2">Static embeddings assign the same vector to a word regardless of context. "Bank" has one representation whether it refers to a riverbank or a financial institution. This is a fundamental limitation for modeling how the brain processes language in context.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">BERT</span></h3>
+<p class="p6"><span class="s1">BERT</span></p>
+<p class="p15"><span class="s2">Bidirectional Encoder Representations from Transformers. A transformer-based model pretrained via masked language modeling (MLM). Unlike static embeddings, BERT produces contextual representations: the vector for each word depends on the surrounding words. Uses multi-head self-attention to capture relationships between all pairs of words in a sequence.</span></p>
+<p class="p5"><span class="s2">Key properties:</span></p>
+<ul class="ul1">
+  <li class="li17"><span class="s6"></span><span class="s2">Bidirectional: attends to both preceding and following words (unlike GPT, which is left-to-right only)</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Max sequence length: 512 tokens. Long stories must be processed in overlapping windows</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Uses WordPiece tokenizer, which splits rare words into subword units (no OOV problems)</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Embeddings are typically extracted from the last hidden layer, with mean pooling over subwords</span></li>
+</ul>
+<p class="p6"><span class="s1">MASKED LANGUAGE MODELING (MLM)</span></p>
+<p class="p15"><span class="s2">BERT's pretraining objective. 15% of tokens are selected, then: 80% are replaced with </span><span class="s7">[MASK]</span><span class="s2">, 10% with a random token, 10% unchanged. The model learns to predict the original tokens from context.</span></p>
+<p class="p5"><span class="s2">Fine-tuning vs transfer learning:</span></p>
+<ul class="ul1">
+  <li class="li17"><span class="s6"></span><span class="s2">Transfer learning: freeze BERT's weights, only train new layers on top (e.g., a classification head). Embeddings come from the frozen model</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Fine-tuning: allow BERT's weights to update during a second round of training on your specific data. More expressive but risks overfitting on small datasets</span></li>
+</ul>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">LoRA (Low-Rank Adaptation)</span></h3>
+<p class="p6"><span class="s1">LORA</span></p>
+<p class="p18"><span class="s1">A parameter-efficient fine-tuning method. In a transformer like BERT, each layer contains large weight matrices $W \in \mathbb{R}^{d_1 \times d_2}$ (e.g., the query projection in attention has $d_1 = d_2 = 768$). Full fine-tuning updates all entries of $W$, which means storing gradients for all ~110M parameters.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">The idea behind LoRA: the task-specific update $\Delta W$ probably doesn't need the full rank of the matrix. So LoRA freezes $W$ and learns a low-rank factorization: $$\Delta W = \frac{\gamma}{r} AB^\top, \qquad A \in \mathbb{R}^{d_1 \times r},\; B \in \mathbb{R}^{d_2 \times r}$$ where $r \ll \min(d_1, d_2)$ is the rank (e.g., $r = 4$ or $8$), and $\gamma$ is a scaling factor that controls the update magnitude (not to be confused with $\alpha_{\text{ridge}}$, the ridge regularization parameter). Only $A$ and $B$ are trained; the original $W$ stays frozen.</span></p>
+<p class="p5"><span class="s2">Low-rank intuition: a full $768 \times 768$ matrix has ~590K parameters per layer. A rank-4 factorization has only $768 \times 4 + 768 \times 4 = 6{,}144$ parameters. The assumption is that the direction BERT needs to shift for this task lives in a low-dimensional subspace, like PCA for weight updates.</span></p>
+<p class="p5"><span class="s2">Why LoRA for this lab? Full fine-tuning of BERT on ~24k words of story transcripts risks overfitting. LoRA's low parameter count acts as implicit regularization while still allowing the model to adapt its contextual representations to the narrative domain. Students fine-tune with LoRA on the MLM objective (same pretraining task, different data), then extract embeddings from the adapted model.</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">The Modeling Pipeline</span></h2>
+<p class="p11"><span class="s1">Illustrated Pipeline (with dimensions)</span></p>
+<p class="p20"><span class="s1">Step 1</span></p>
+<p class="p21"><span class="s1">Raw text (one story $s$)</span></p>
+<p class="p22"><span class="s2">the</span></p>
+<p class="p22"><span class="s2">quick</span></p>
+<p class="p22"><span class="s2">brown</span></p>
+<p class="p23"><span class="s1">...</span></p>
+<p class="p22"><span class="s2">end</span></p>
+<p class="p20"><span class="s1">$W_s \approx 800$ words with onset timestamps</span></p>
+<p class="p24"><span class="s1">↓ embed (Word2Vec / GloVe / BERT)</span></p>
+<p class="p20"><span class="s1">Step 2</span></p>
+<p class="p21"><span class="s1">Word embeddings $E$</span></p>
+<p class="p20"><span class="s1">$E \in \mathbb{R}^{W_s \times p}$ (e.g., $800 \times 768$) — each row = one word's embedding vector</span></p>
+<p class="p24"><span class="s1">↓ Lanczos downsample to scanner acquisition rate</span></p>
+<p class="p20"><span class="s1">Step 3</span></p>
+<p class="p21"><span class="s1">Downsampled $E'$</span></p>
+<p class="p20"><span class="s1">$E' \in \mathbb{R}^{T_s \times p}$ (e.g., $241 \times 768$) — fewer rows, same columns</span></p>
+<p class="p24"><span class="s1">↓ </span><span class="s8">make_delayed([1,2,3,4])</span><span class="s1"> — concatenate shifted copies</span></p>
+<p class="p20"><span class="s1">Step 4</span></p>
+<p class="p21"><span class="s1">Delayed features $X_{\text{story}}$</span></p>
+<p class="p20"><span class="s1">$X_{\text{story}} \in \mathbb{R}^{T_s \times 4p}$ (e.g., $241 \times 3072$) — 4 colors = 4 delay copies</span></p>
+<p class="p24"><span class="s1">↓ trim edges + stack all training stories</span></p>
+<p class="p20"><span class="s1">Step 5</span></p>
+<p class="p21"><span class="s1">Combine features with fMRI response (one subject)</span></p>
+<p class="p20"><span class="s1">$X \in \mathbb{R}^{T \times 4p}$</span></p>
+<p class="p20"><span class="s1">paired with</span></p>
+<p class="p20"><span class="s1">$Y \in \mathbb{R}^{T \times V_j}$ ($V_j = 94{,}251$)</span></p>
+<p class="p24"><span class="s1">↓ ridge: $\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y$ — inverted once, applied to all $V_j$ columns</span></p>
+<p class="p20"><span class="s1">Step 6</span></p>
+<p class="p21"><span class="s1">Weight matrix $\hat{B}$</span></p>
+<p class="p20"><span class="s1">$\hat{B} \in \mathbb{R}^{4p \times V_j}$ — each column $\hat{\beta}_i$ = one voxel's learned weights</span></p>
+<p class="p24"><span class="s1">↓ predict on test story: $\hat{Y}_{\text{test}} = X_{\text{test}} \hat{B}$, evaluate $r_i = \mathrm{corr}(y_i, \hat{y}_i)$ per voxel</span></p>
+<p class="p20"><span class="s1">Step 7</span></p>
+<p class="p21"><span class="s1">Pearson CC per voxel ($r_i$)</span></p>
+<p class="p20"><span class="s1">Most voxels have $r_i \approx 0$ (gray). Language-responsive voxels reach $r_i \sim 0.3\text{-}0.5$ (gold).</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Step 1: Lanczos Downsampling</span></h3>
+<p class="p5"><span class="s2">Words occur at irregular intervals (~3 per second on average, but varying). The fMRI scanner captures snapshots at regular intervals (every TR $\approx$ 2 seconds). We need to convert from "one embedding per word, at irregular times" to "one embedding per timepoint, at regular times," which means interpolating onto a new time grid.</span></p>
+<p class="p6"><span class="s1">WHAT DOWNSAMPLING DOES</span></p>
+<p class="p18"><span class="s1">Think of each word embedding as a point in time: word $k$ has embedding vector $e_k \in \mathbb{R}^p$ at onset time $t_k^{\text{word}}$. We want an embedding vector at each scanner timepoint $t_n^{\text{scan}}$ (for $n = 1, \ldots, T_s$). The Lanczos filter computes a weighted average of nearby word embeddings: $$E'(t_n^{\text{scan}}) = \sum_{k=1}^{W_s} w_{nk} \cdot e_k$$ where the weights $w_{nk}$ depend on how close word $k$'s onset time is to scanner timepoint $n$. Words spoken near $t_n^{\text{scan}}$ get high weight; words spoken far from $t_n^{\text{scan}}$ get near-zero weight. The Lanczos kernel (a windowed sinc function) determines the exact weights, with a window parameter controlling how many nearby words contribute (default: 3 lobes).<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">Dimensions: story $s$ has $W_s$ words and $T_s$ scanner timepoints. The raw embedding matrix $E \in \mathbb{R}^{W_s \times p}$ becomes $E' \in \mathbb{R}^{T_s \times p}$. Each row of $E'$ is a weighted blend of the rows of $E$.</span></p>
+<p class="p5"><span class="s2">Example: for a story with $W_s = 800$ words and $T_s = 241$ timepoints, a BERT embedding ($p = 768$) goes from $800 \times 768$ to $241 \times 768$. If three words were spoken during the 2-second interval around timepoint $n$, the embedding at timepoint $n$ is roughly an average of those three words' embeddings, with the word closest in time weighted most heavily.</span></p>
+<p class="p16"><span class="s2">Because each timepoint's embedding is a blend of several words, the model never sees a "pure" single-word signal. This matters for interpretation: when SHAP says "the word 'dog' is important for this voxel," it means that removing 'dog' changes the blended embeddings at the timepoints where 'dog' contributes, which in turn changes the predicted BOLD signal. The word-level attribution works because the SHAP/LIME wrapper re-runs the full pipeline (including downsampling) for each text perturbation, so the effect of removing a single word propagates naturally through the blending step.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Step 2: Temporal Delays</span></h3>
+<p class="p5"><span class="s2">Due to the HRF, the brain's response to a word heard at time $t$ appears in the fMRI data at approximately $t + 4$ to $t + 8$ seconds. The function </span><span class="s5">make_delayed(stim, delays=[1,2,3,4])</span><span class="s2"> accounts for this.</span></p>
+<p class="p6"><span class="s1">DELAYED FEATURE MATRIX</span></p>
+<p class="p18"><span class="s1">Starting from the downsampled embedding $E' \in \mathbb{R}^{T_s \times p}$, create shifted copies at delays of 1, 2, 3, and 4 TR intervals and concatenate horizontally: $$X_{\text{story}} = [E'_{t-1},\; E'_{t-2},\; E'_{t-3},\; E'_{t-4}] \in \mathbb{R}^{T_s \times 4p}$$ Row $t$ contains the embedding features from 1, 2, 3, and 4 TR intervals before timepoint $t$. Early rows are zero-padded (there are no words before the story starts).<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">Example: Word2Vec ($p = 300$) becomes $T_s \times 1200$. BERT ($p = 768$) becomes $T_s \times 3072$.</span></p>
+<p class="p5"><span class="s2">Why these specific delays? The HRF peaks at 4-6 seconds post-stimulus. With TR $\approx$ 2s, delays of 1-4 TR intervals correspond to 2, 4, 6, and 8 seconds. The ridge regression learns a weight for each delay at each voxel, effectively fitting the HRF shape per voxel. Some voxels respond faster (more weight on delay 1-2), others slower (more weight on delay 3-4).</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Step 3: Trimming</span></h3>
+<p class="p5"><span class="s2">Remove the first 5 timepoints (~10 seconds) and last 10 timepoints (~20 seconds) from both the delayed embedding matrix $X_{\text{story}}$ and the corresponding BOLD response columns. This eliminates onset/offset artifacts: the scanner is stabilizing, the subject may not yet be attending, and the hemodynamic response needs time to ramp up. After trimming, a story with $T_s = 241$ timepoints becomes $T_s - 15 = 226$ usable timepoints.</span></p>
+<p class="p5"><span class="s2">Stacking stories: after trimming, the per-story matrices are vertically concatenated across all training stories to form the full design matrix $X \in \mathbb{R}^{T \times 4p}$ and response matrix $Y \in \mathbb{R}^{T \times V}$, where $T = \sum_s (T_s - 15) \approx 23{,}000$ is the total number of usable timepoints across all stories. This is where the notation switches from $T_s$ (per-story) to $T$ (all stories stacked).</span></p>
+<p class="p16"><span class="s2">A note on trimming from a previous semester: the lab instructions say trim 5 timepoints at the start and 10 at the end, but because the stimulus TR times start at $-9$s (padding for HRF lag), trimming 10 timepoints at the start and 5 at the end may yield better correlations. The Huth lab's own tutorial code uses </span><span class="s9">[5+trim:-trim]</span><span class="s2"> indexing consistent with 10-start/5-end. The key principle is that X and Y must be aligned after trimming: however many timepoints you remove, remove them from the same positions in both matrices. Either approach is defensible as long as it is clearly justified in the report. If your group has already implemented one approach for 3.1, stick with it.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Step 4: Ridge Regression</span></h3>
+<p class="p5"><span class="s2">The approach is sometimes called "mass-univariate" in the neuroimaging literature: we fit one independent regression model per voxel (~94k models), all sharing the same feature matrix $X$ but with different target columns $y_i$. Here's the notation.</span></p>
+<p class="p6"><span class="s1">SETUP AND NOTATION</span></p>
+<p class="p18"><span class="s1">Fix a subject $j \in \{2, 3\}$. Let $p$ denote the embedding dimension (e.g., $p = 300$ for Word2Vec, $p = 768$ for BERT). After applying delays with lags 1 through 4, the feature dimension becomes $4p$. Let $V_j$ denote the number of voxels for subject $j$ ($V_2 = 94{,}251$, $V_3 = 95{,}556$). Let $T$ denote the total number of timepoints across all training stories (after trimming).<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">Design matrix (shared across voxels): $$X \in \mathbb{R}^{T \times 4p}$$ Row $t$ of $X$ is $x(t)^\top$, the delayed embedding vector at time $t$. This matrix is the same for every voxel: it depends only on the text and the embedding method, not on which voxel we are predicting.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">Response matrix (one column per voxel): $$Y \in \mathbb{R}^{T \times V_j}$$ Column $i$ of $Y$ is the BOLD time series $y_i = (y_i(1), \ldots, y_i(T))^\top$ at voxel $i$. This is the fMRI data.</span></p>
+<p class="p6"><span class="s1">THE MODEL (PER VOXEL)</span></p>
+<p class="p15"><span class="s2">For each voxel $i = 1, \ldots, V_j$, we fit a separate ridge regression: $$\hat{\beta}_i = \arg\min_{\beta \in \mathbb{R}^{4p}} \|y_i - X\beta\|_2^2 + \alpha_{\text{ridge}} \|\beta\|_2^2$$ The predicted BOLD signal at voxel $i$ and time $t$ is: $$\hat{y}_i(t) = x(t)^\top \hat{\beta}_i$$ Each voxel gets its own weight vector $\hat{\beta}_i \in \mathbb{R}^{4p}$, learned from the same design matrix $X$ but a different target column $y_i$. Intuitively, the weights encode which embedding features (and at which time lags) are predictive of activity at that specific brain location.</span></p>
+<p class="p6"><span class="s1">EFFICIENT JOINT SOLUTION</span></p>
+<p class="p15"><span class="s2">Although each voxel has its own $\hat{\beta}_i$, we can solve all $V_j$ regressions at once: $$\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y \in \mathbb{R}^{4p \times V_j}$$ Column $i$ of $\hat{B}$ is $\hat{\beta}_i$. The important thing: $X^\top X + \alpha_{\text{ridge}} I$ is inverted only once (it doesn't depend on $i$), then multiplied by each column of $Y$. That's why fitting ~94k regressions is feasible.</span></p>
+<p class="p5"><span class="s2">Cross-validation: leave-one-story-out (LOSO). Train on all stories except one, predict on the held-out story. The regularization parameter $\alpha_{\text{ridge}}$ is selected via grid search. The incremental approach (precompute global $X^\top X$ and $X^\top Y$, subtract each story's contribution) avoids reprocessing all training data per fold.</span></p>
+<p class="p6"><span class="s1">EVALUATION</span></p>
+<p class="p15"><span class="s2">On a held-out test story with $T_{\text{test}}$ timepoints, the predicted BOLD at voxel $i$ is $\hat{y}_i^{\text{test}} = X_{\text{test}} \hat{\beta}_i \in \mathbb{R}^{T_{\text{test}}}$. Model performance at voxel $i$ is the Pearson correlation: $$r_i = \mathrm{corr}(y_i^{\text{test}}, \hat{y}_i^{\text{test}})$$ We report aggregate statistics across all voxels: mean CC, median CC, top 1% CC, and top 5% CC. Most voxels will have $r_i \approx 0$ (they are not involved in language processing), while a subset of language-responsive voxels will show meaningful correlations.</span></p>
+<p class="p16"><span class="s2">Memory is the main computational bottleneck. The $X$ matrix ($T \times 4p$) is manageable, but $Y$ ($T \times 94{,}000$) in float64 is ~18 GB across all stories. Practical solutions: cast to </span><span class="s9">float32</span><span class="s2"> (halves memory), use memory-mapped loading (</span><span class="s9">np.load(..., mmap_mode='r')</span><span class="s2">), and process voxels in batches rather than all at once. Students who completed 3.1 should already have a working pipeline for this.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Why Ridge Regression?</span></h3>
+<p class="p6"><span class="s1">WHY RIDGE WORKS HERE</span></p>
+<p class="p18"><span class="s1">With BERT embeddings and 4 delays, the feature dimension is $4p = 3{,}072$. We have $T \approx 23{,}000$ timepoints, so $T &gt; 4p$, but the delayed features are highly correlated (lag 1 and lag 2 of the same embedding are nearly identical), which means OLS would overfit badly. Ridge shrinks correlated coefficients jointly, stabilizing the solution.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">It also has a closed-form solution: $\hat{B} = (X^\top X + \alpha_{\text{ridge}} I)^{-1} X^\top Y$ is computed once and applied to all 94k voxels, so no iterative optimization is needed.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">Conceptually, the encoding model is $f = g \circ h$, where $g$ is the nonlinear embedding (Word2Vec, BERT, etc.) and $h$ is the linear ridge map. All the representational power comes from $g$; the regression just projects embeddings onto voxel responses. This is the standard "linearized model" approach in computational neuroscience (Huth et al., 2016).</span></p>
+<p class="p6"><span class="s1">ALTERNATIVES</span></p>
+<p class="p18"><span class="s1">OLS: overfits due to multicollinearity from the delayed features. Not viable.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">Lasso: produces sparse weights (potentially more interpretable), but much slower (no closed-form, iterative per voxel), the sparsity assumption probably doesn't hold (brain responses depend on many embedding dimensions), and L1 is unstable with correlated features.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">Elastic net: could work but adds a hyperparameter and is slower.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">Nonlinear models: fMRI data is noisy enough that neural nets and random forests tend to overfit here. The linearized approach (nonlinear embedding + linear map) is standard in the field for this data regime.</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Interpretation (Lab 3.3)</span></h2>
+<p class="p5"><span class="s2">The ridge weights $\hat{\beta}_i \in \mathbb{R}^{4p}$ don't tell you "which words matter" directly, because each BERT embedding dimension doesn't correspond to anything human-readable. (With one-hot bag-of-words you'd get this for free, but we lose it with distributed representations.) To get word-level interpretations, we use post-hoc attribution methods.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">SHAP</span></h3>
+<p class="p6"><span class="s1">SHAP (SHAPLEY ADDITIVE EXPLANATIONS)</span></p>
+<p class="p15"><span class="s2">Grounded in cooperative game theory. Assigns each input feature (word) a contribution to the model's prediction based on Shapley values: the average marginal contribution of the feature across all possible coalitions. For BERT models, uses a partition explainer that replaces words with </span><span class="s7">[MASK]</span><span class="s2"> tokens, preserving positional structure while removing semantic content.</span></p>
+<p class="p5"><span class="s2">Theoretically grounded (additive, symmetric), but computationally expensive. In practice, tends to highlight function words and discourse markers.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">LIME</span></h3>
+<p class="p6"><span class="s1">LIME (LOCAL INTERPRETABLE MODEL-AGNOSTIC EXPLANATIONS)</span></p>
+<p class="p15"><span class="s2">Assumes the model is approximately linear in a small neighborhood of the input. Generates perturbed inputs by randomly deleting words, records prediction changes, then fits a sparse linear surrogate model. The surrogate's weights serve as feature importance scores.</span></p>
+<p class="p5"><span class="s2">Fast and model-agnostic, but deletion changes the sequence length and shifts positions, which can be problematic for transformers. Tends to highlight content words rather than structural ones.</span></p>
+<p class="p16"><span class="s2">The lab requires both SHAP and LIME. They highlight different types of words because their perturbation mechanisms differ (masking vs deletion), so words flagged by both methods are more trustworthy. Only run interpretation on well-predicted voxels: interpreting a bad model tells you nothing (this is the "P" in PCS).</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">The Wrapper Pattern (how to make SHAP/LIME work here)</span></h3>
+<p class="p5"><span class="s2">SHAP and LIME expect a function </span><span class="s5">f(text) → prediction</span><span class="s2">, but our model is a ridge regression on delayed, downsampled embeddings. The trick is to wrap the entire pipeline in a class so SHAP/LIME can perturb the raw text and observe how predictions change.</span></p>
+<p class="p25"><span class="s2">class fMRI_Predictor:</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">    </span>def __init__(self, ridge_model, tokenizer, bert_model,</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">                 </span>data_times, tr_times, voxel_index):</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">        </span># Store all pipeline components</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">        </span>...</span></p>
+<p class="p26"><span class="s2"></span><br></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">    </span>def predict(self, texts):</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">        </span># texts: list of strings (perturbed versions from SHAP/LIME)</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">        </span>predictions = []</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">        </span>for text in texts:</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">            </span>words = text.split()</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">            </span>embeddings = get_bert_embeddings(words)<span class="Apple-converted-space">  </span># re-embed</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">            </span>downsampled = lanczos_downsample(embeddings)</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">            </span>delayed = make_delayed(downsampled, [1,2,3,4])</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">            </span>pred = self.ridge_model.predict(delayed)</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">            </span>predictions.append(pred[:, self.voxel_index].mean())</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">        </span>return np.array(predictions)</span></p>
+<p class="p5"><span class="s2">Then hand the wrapper to the explainers:</span></p>
+<p class="p25"><span class="s2"># SHAP: masks words with [MASK], preserving position</span></p>
+<p class="p25"><span class="s2">masker = shap.maskers.Text(r"\s+", mask_token="[MASK]")</span></p>
+<p class="p25"><span class="s2">explainer = shap.Explainer(predictor.predict, masker)</span></p>
+<p class="p25"><span class="s2">shap_values = explainer([text_input])</span></p>
+<p class="p26"><span class="s2"></span><br></p>
+<p class="p25"><span class="s2"># LIME: deletes words, fits local linear surrogate</span></p>
+<p class="p25"><span class="s2">lime_explainer = LimeTextExplainer()</span></p>
+<p class="p25"><span class="s2">exp = lime_explainer.explain_instance(</span></p>
+<p class="p25"><span class="s2"><span class="Apple-converted-space">    </span>text_input, predictor.predict, num_features=10)</span></p>
+<p class="p5"><span class="s2">SHAP replaces words with </span><span class="s5">[MASK]</span><span class="s2">, so BERT still sees a token at that position. LIME deletes words entirely, changing the sequence length. This is why they tend to flag different words: SHAP picks up positional/structural importance, LIME picks up semantic content.</span></p>
+<p class="p5"><span class="s2">Practical note: this is slow because every perturbation requires a full forward pass through BERT + the preprocessing pipeline. For LIME with </span><span class="s5">num_samples=100</span><span class="s2">, that's 100 BERT forward passes per voxel. Run this on GPU via </span><span class="s5">sbatch</span><span class="s2">, not the login node.</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">PCS Framework</span></h2>
+<p class="p6"><span class="s1">PREDICTABILITY</span></p>
+<p class="p15"><span class="s2">Does the model predict well on held-out data? Evaluate via CC on test stories. Only interpret voxels where the model actually predicts well: the "P" in PCS is a prerequisite for meaningful "S" and interpretation.</span></p>
+<p class="p6"><span class="s1">COMPUTABILITY</span></p>
+<p class="p15"><span class="s2">Can you actually compute the answer? Memory management on Bridges-2, efficient ridge regression, managing 50GB of fMRI data: these are computability challenges. If the kernel crashes, you have a computability problem.</span></p>
+<p class="p6"><span class="s1">STABILITY</span></p>
+<p class="p18"><span class="s1">Do conclusions change under perturbations? Several levels of stability to test:<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">Input stability (embedding robustness): perturb the story text (typos, synonym substitution, random word replacement) and measure how much the embeddings change. Static embeddings (Word2Vec, GloVe) are robust but insensitive; BERT is sensitive but captures real semantic shifts.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">Inference stability (interpretation robustness): shift the analysis time window slightly (e.g., TR 100-120 vs TR 102-122, a ~4 second shift) and compare the top SHAP/LIME words. Measure overlap with Jaccard similarity: $$J(A, B) = \frac{|A \cap B|}{|A \cup B|}$$ where $A$ and $B$ are the top-10 word sets from each window. High Jaccard (e.g., $\geq 0.5$) means the interpretation is stable; low Jaccard means the "important words" are artifacts of the exact window choice.<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p18"><span class="s1">Cross-subject stability: do the same voxel regions show high CC in both subjects? (Limited by the fact that voxels don't map one-to-one across subjects.)<span class="Apple-converted-space"> </span></span></p>
+<p class="p19"><span class="s2"></span><br></p>
+<p class="p15"><span class="s2">Cross-embedding stability: do different embedding methods identify the same top voxels? Measure via Jaccard on top-5% voxel sets across methods.</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Data Summary</span></h2>
+<table cellspacing="0" cellpadding="0" class="t2">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td15">
+        <p class="p27"><span class="s2"></span><br></p>
+      </td>
+      <td valign="middle" class="td16">
+        <p class="p7"><span class="s2">SUBJECT 2</span></p>
+      </td>
+      <td valign="middle" class="td16">
+        <p class="p7"><span class="s2">SUBJECT 3</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td17">
+        <p class="p8"><span class="s2">Story files</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">101 (.npy)</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">101 (.npy)</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td17">
+        <p class="p8"><span class="s2">Voxels (V)</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">94,251</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">95,556</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td17">
+        <p class="p8"><span class="s2">Data type</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">float64</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">float64</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td17">
+        <p class="p8"><span class="s2">Directory size</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">~25 GB</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">~25 GB</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td17">
+        <p class="p8"><span class="s2">Per-story file size</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">~174 MB</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">~177 MB</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td17">
+        <p class="p8"><span class="s2">Timepoints per story (example)</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">241</span></p>
+      </td>
+      <td valign="middle" class="td18">
+        <p class="p8"><span class="s2">241</span></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p class="p5"><span class="s2">Transcripts: </span><span class="s5">raw_text.pkl</span><span class="s2"> contains 109 stories (superset of fMRI stories). Each story is a </span><span class="s5">DataSequence</span><span class="s2"> object with: word tokens (</span><span class="s5">data</span><span class="s2">), word onset times (</span><span class="s5">data_times</span><span class="s2">), and TR times (</span><span class="s5">tr_times</span><span class="s2">). Loading requires </span><span class="s5">ridge_utils</span><span class="s2"> on the Python path.</span></p>
+<p class="p5"><span class="s2">Memory math: full Subject 2 in float64 $\approx$ 18 GB; in float32 $\approx$ 9 GB; single story in float32 $\approx$ 87 MB.</span></p>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Infrastructure</span></h2>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Bridges-2 (PSC)</span></h3>
+<p class="p5"><span class="s2">Pittsburgh Supercomputing Center HPC cluster. Data at: </span><span class="s5">/ocean/projects/mth250011p/shared/215a/final_project/data</span><span class="s2">. Shared storage: 512 GB for the whole class (provisioning an additional 512 GB). Always submit jobs via </span><span class="s5">sbatch</span><span class="s2">, not the login node. Request memory explicitly (e.g., </span><span class="s5">--mem=64G</span><span class="s2">).</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">SCF (Berkeley Stats)</span></h3>
+<p class="p5"><span class="s2">Stats Computing Facility, local alternative. Data mirrored at: </span><span class="s5">/scratch/users/s214/lab3</span><span class="s2">. Some students have reported permission issues accessing this path.</span></p>
+<h3 style="margin: 0.0px 0.0px 6.0px 0.0px; font: 13.2px 'Helvetica Neue'; color: #212121; -webkit-text-stroke: #212121"><span class="s2">Common Student Pain Points</span></h3>
+<ul class="ul1">
+  <li class="li17"><span class="s6"></span><span class="s2">Kernel crashes: usually running on the login node instead of submitting via </span><span class="s5">sbatch</span><span class="s2">, or insufficient memory allocation</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Memory: use </span><span class="s5">float32</span><span class="s2">, memory-mapped loading, process voxels in batches. Bag-of-words embeddings are sparse and should be stored in compressed format (</span><span class="s5">scipy.sparse</span><span class="s2">), but Word2Vec, GloVe, and BERT embeddings are dense</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Storage: do not store unnecessarily large files. Use HuggingFace (100GB free) for sharing within groups. Compress where possible</span></li>
+  <li class="li17"><span class="s6"></span><span class="s2">Permissions: ensure GitHub org and classroom invitations are accepted</span></li>
+</ul>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Timeline &amp; Deadlines</span></h2>
+<table cellspacing="0" cellpadding="0" class="t2">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td19">
+        <p class="p7"><span class="s2">MILESTONE</span></p>
+      </td>
+      <td valign="middle" class="td20">
+        <p class="p7"><span class="s2">DUE DATE</span></p>
+      </td>
+      <td valign="middle" class="td21">
+        <p class="p7"><span class="s2">WHAT'S EXPECTED</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td22">
+        <p class="p8"><span class="s2">Lab 3.1 check-in</span></p>
+      </td>
+      <td valign="middle" class="td23">
+        <p class="p8"><span class="s2">April 10, 23:59</span></p>
+      </td>
+      <td valign="middle" class="td24">
+        <p class="p8"><span class="s2">1-2 page PDF: BoW, Word2Vec, GloVe embeddings → ridge → CC results. At least one figure. Collaboration plan</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td22">
+        <p class="p8"><span class="s2">Lab 3.2 check-in</span></p>
+      </td>
+      <td valign="middle" class="td23">
+        <p class="p8"><span class="s2">April 24, 23:59</span></p>
+      </td>
+      <td valign="middle" class="td24">
+        <p class="p8"><span class="s2">Pretrained BERT + fine-tuned BERT (LoRA) → ridge → comparison with 3.1 methods</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td22">
+        <p class="p8"><span class="s2">Final report</span></p>
+      </td>
+      <td valign="middle" class="td23">
+        <p class="p8"><span class="s2">May 8, 23:59</span></p>
+      </td>
+      <td valign="middle" class="td24">
+        <p class="p8"><span class="s2">Full 20-page report covering all embeddings, modeling, SHAP/LIME interpretation, stability analysis. Push code to GitHub</span></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h2 style="margin: 0.0px 0.0px 9.0px 0.0px; font: 16.2px 'Helvetica Neue'; color: #02244f; -webkit-text-stroke: #02244f"><span class="s2">Quick Reference</span></h2>
+<p class="p28"><span class="s10">Key Dimensions</span></p>
+<p class="p8"><span class="s10">TR: ~2.0045 seconds</span></p>
+<p class="p8"><span class="s10">Voxels per subject: ~94,000-96,000 (subject-native space)</span></p>
+<p class="p8"><span class="s10">Stories: 101 per subject (109 transcripts total)</span></p>
+<p class="p8"><span class="s10">Total words: ~23,800</span></p>
+<p class="p8"><span class="s10">Word2Vec dim: 300 (Google News pretrained)</span></p>
+<p class="p8"><span class="s10">GloVe dim: 50/100/200/300 (depending on version)</span></p>
+<p class="p8"><span class="s10">BERT hidden dim: 768 (bert-base-uncased)</span></p>
+<p class="p8"><span class="s10">After delays (4×): embedding dim × 4</span></p>
+<p class="p28"><span class="s10">Evaluation Metrics</span></p>
+<p class="p8"><span class="s10">CC (Correlation Coefficient): Pearson $r$ between predicted and actual BOLD, per voxel, on test story</span></p>
+<p class="p8"><span class="s10">Mean CC: primary model selection metric</span></p>
+<p class="p8"><span class="s10">Top 1%/5% CC: performance in the most language-responsive voxels</span></p>
+<p class="p8"><span class="s10">Jaccard similarity: overlap of top voxel sets across embedding methods</span></p>
+<p class="p28"><span class="s10">Key Code Functions (preprocessing.py)</span></p>
+<p class="p8"><span class="s11">downsample_word_vectors()</span><span class="s10">: Lanczos-filter word embeddings from word rate to TR rate</span></p>
+<p class="p8"><span class="s11">make_delayed(stim, delays)</span><span class="s10">: create time-lagged feature copies and concatenate horizontally</span></p>
+<p class="p8"><span class="s11">lanczosinterp2D()</span><span class="s10">: low-level Lanczos interpolation (called by downsample)</span></p>
+<p class="p28"><span class="s10">Reference Paper</span></p>
+<p class="p8"><span class="s10">Jain &amp; Huth (2018). "Incorporating Context into Language Encoding Models for fMRI." NeurIPS 2018.</span></p>
+<p class="p8"><span class="s10">Uses LSTM language model (not BERT) but same data, same pipeline structure. Lab 3 updates the approach with transformer-based models.</span></p>
 </body>
 </html>
