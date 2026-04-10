@@ -120,93 +120,9 @@
     return word_embeddings  # shape: (len(words), 768)</code></pre>
 </div>
 
-<details><summary>Implementation details (HuggingFace code)</summary>
-<div class="impl">
-<pre><code>from transformers import BertTokenizerFast, BertModel
-import torch, numpy as np
-
-tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
-model = BertModel.from_pretrained("bert-base-uncased")
-model.eval()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
-
-def get_word_embeddings(words, tokenizer, model, device):
-    encoding = tokenizer(
-        words, is_split_into_words=True, return_tensors="pt",
-        padding=True, truncation=True, max_length=512,
-        add_special_tokens=False
-    )
-    word_ids = encoding.word_ids()
-    inputs = {k: v.to(device) for k, v in encoding.items()}
-
-    with torch.no_grad():
-        outputs = model(**inputs)
-        hidden = outputs.last_hidden_state[0]  # (seq_len, 768)
-
-    word_vectors = []
-    current_wid, current_vecs = None, []
-    for i, wid in enumerate(word_ids):
-        if wid is None: continue
-        if wid != current_wid:
-            if current_vecs:
-                word_vectors.append(torch.stack(current_vecs).mean(dim=0))
-            current_wid, current_vecs = wid, []
-        current_vecs.append(hidden[i])
-    if current_vecs:
-        word_vectors.append(torch.stack(current_vecs).mean(dim=0))
-
-    assert len(word_vectors) == len(words)
-    return torch.stack(word_vectors).cpu().numpy()</code></pre>
-</div></details>
-
 <h3>Handling long stories (512-token limit)</h3>
 
 <p>Most stories have ~800 words → ~1000+ subtokens, exceeding BERT's 512 limit. Process in overlapping windows: slide a 512-token window across the subtoken sequence with some stride (e.g., 256). For words appearing in multiple windows, average their embeddings across windows.</p>
-
-<details><summary>Implementation details (windowing code)</summary>
-<div class="impl">
-<pre><code>def get_embeddings_long_story(words, tokenizer, model, device,
-                               max_length=512, stride=256):
-    full_enc = tokenizer(words, is_split_into_words=True,
-                         add_special_tokens=False, truncation=False)
-    all_ids = full_enc["input_ids"]
-    all_wids = full_enc.word_ids()
-
-    sums = [np.zeros(768) for _ in range(len(words))]
-    counts = [0] * len(words)
-
-    for start in range(0, len(all_ids), stride):
-        end = min(start + max_length, len(all_ids))
-        window_ids = all_ids[start:end]
-        window_wids = all_wids[start:end]
-
-        inputs = torch.tensor([window_ids]).to(device)
-        with torch.no_grad():
-            hidden = model(input_ids=inputs).last_hidden_state[0]
-
-        cur_wid, cur_vecs = None, []
-        for i, wid in enumerate(window_wids):
-            if wid is None: continue
-            if wid != cur_wid:
-                if cur_vecs and cur_wid is not None:
-                    emb = torch.stack(cur_vecs).mean(0).cpu().numpy()
-                    sums[cur_wid] += emb
-                    counts[cur_wid] += 1
-                cur_wid, cur_vecs = wid, []
-            cur_vecs.append(hidden[i])
-        if cur_vecs and cur_wid is not None:
-            emb = torch.stack(cur_vecs).mean(0).cpu().numpy()
-            sums[cur_wid] += emb
-            counts[cur_wid] += 1
-        if end >= len(all_ids): break
-
-    result = np.zeros((len(words), 768))
-    for w in range(len(words)):
-        if counts[w] > 0:
-            result[w] = sums[w] / counts[w]
-    return result</code></pre>
-</div></details>
 
 
 <h2>Part 2: What LoRA does</h2>
@@ -346,21 +262,6 @@ embeddings = get_word_embeddings(words, finetuned_encoder)
 # Then: downsample → delays → ridge → CC (identical to 3.1)</code></pre>
 </div>
 
-<details><summary>Implementation details</summary>
-<div class="impl">
-<pre><code>from peft import PeftModel
-from transformers import BertModel
-
-base = BertModel.from_pretrained("bert-base-uncased")
-finetuned = PeftModel.from_pretrained(base, "lora_adapter_r8")
-finetuned.eval()
-finetuned.to(device)
-
-# Use the same get_word_embeddings / get_embeddings_long_story
-# functions from Part 1, passing finetuned as the model
-embeddings = get_word_embeddings(words, tokenizer, finetuned, device)</code></pre>
-</div></details>
-
 <div class="watchout"><strong>BertModel vs BertForMaskedLM.</strong> These are different classes.
 <code>BertModel</code> outputs <code>last_hidden_state</code> (shape: seq_len × 768): these are the embeddings you want.
 <code>BertForMaskedLM</code> = <code>BertModel</code> + an MLM prediction head (dense → layer norm → projection to vocab size 30,522). It outputs <code>logits</code> (shape: seq_len × 30,522), which are token predictions, not embeddings. You train with <code>BertForMaskedLM</code> (because you need the MLM loss), but extract embeddings from <code>BertModel</code> (because you want the hidden states). The LoRA adapter modifies the attention layers, which are shared between both. If a student accidentally extracts from the MLM model, they'll get vocabulary logits instead of embeddings, and the shapes won't match.
@@ -385,13 +286,11 @@ You can also access the base encoder inside <code>BertForMaskedLM</code> via <co
 <h2>Questions to address in the report</h2>
 
 <ul>
-  <li><strong>Does fine-tuning help?</strong> Compare pretrained vs LoRA-finetuned BERT on mean CC, top 1%/5% CC. If fine-tuning doesn't help, why? Is there a mismatch between the MLM objective (predicting masked tokens) and the downstream use (extracting embeddings for ridge regression)?</li>
+  <li><strong>Does fine-tuning help?</strong> Compare pretrained vs LoRA-finetuned BERT on mean CC, top 1%/5% CC. If it doesn't help, think about why.</li>
 
-  <li><strong>Do contextual embeddings predict different voxels?</strong> Compute Jaccard similarity of top-5% voxel sets between BERT and Word2Vec/GloVe. If BERT predicts well in different brain regions, it captures different linguistic information.</li>
+  <li><strong>Do contextual embeddings predict different voxels?</strong> Compare which voxels are well-predicted under BERT vs the static embeddings from 3.1.</li>
 
-  <li><strong>Data leakage?</strong> You fine-tune BERT on the story transcripts, then use those same transcripts for ridge regression. The MLM task never sees fMRI data, so label information (BOLD signal) is not leaked. But the input distribution is shared. Discuss this choice.</li>
-
-  <li><strong>Stability of hyperparameters.</strong> If changing rank from 8 to 16 flips which voxels are "well-predicted," the conclusions are fragile. This is a natural stability analysis for the PCS framework.</li>
+  <li><strong>Stability of hyperparameters.</strong> How sensitive are your results to the LoRA rank and other choices?</li>
 </ul>
 
 
