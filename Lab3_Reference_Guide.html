@@ -156,11 +156,11 @@
     <tr><td>$t$</td><td>Timepoint index (within a story or stacked)</td><td></td></tr>
     <tr><td>$W_s$</td><td>Number of words in story $s$</td><td>$\sim 800$</td></tr>
     <tr><td>$p$</td><td>Embedding dimension</td><td>$300$ (Word2Vec), $768$ (BERT)</td></tr>
-    <tr><td>$T_s$</td><td>Number of timepoints for story $s$ (before trimming)</td><td>$\sim 241$</td></tr>
-    <tr><td>$T$</td><td>Total timepoints across all training stories (after trimming)</td><td>$\approx 23{,}000$</td></tr>
+    <tr><td>$T_s$</td><td>Number of fMRI timepoints for story $s$</td><td>$\sim 241$</td></tr>
+    <tr><td>$T$</td><td>Total timepoints across all training stories</td><td>$\approx 23{,}000$</td></tr>
     <tr><td>$V_j$</td><td>Number of voxels for subject $j$</td><td>$94{,}251$ (subj 2), $95{,}556$ (subj 3)</td></tr>
     <tr><td>$E$</td><td>Raw word embedding matrix for one story</td><td>$\in \mathbb{R}^{W_s \times p}$</td></tr>
-    <tr><td>$E'$</td><td>Downsampled embedding matrix (at scanner rate)</td><td>$\in \mathbb{R}^{T_s \times p}$</td></tr>
+    <tr><td>$E'$</td><td>Downsampled embedding matrix (after alignment)</td><td>$\in \mathbb{R}^{T_s \times p}$</td></tr>
     <tr><td>$X$</td><td>Design matrix (delayed features, stacked across stories)</td><td>$\in \mathbb{R}^{T \times 4p}$</td></tr>
     <tr><td>$Y$</td><td>BOLD response matrix (stacked across stories, one subject)</td><td>$\in \mathbb{R}^{T \times V_j}$</td></tr>
     <tr><td>$\hat{B}$</td><td>Ridge weight matrix (all voxels). Column $i$ is $\hat{\beta}_i$</td><td>$\in \mathbb{R}^{4p \times V_j}$</td></tr>
@@ -180,9 +180,9 @@
     <span class="pipe-arrow">→</span>
     <span class="pipe-step">Lanczos downsample</span>
     <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Add delays (1-4 TR intervals)</span>
+    <span class="pipe-step">Drop padding rows</span>
     <span class="pipe-arrow">→</span>
-    <span class="pipe-step">Trim edges</span>
+    <span class="pipe-step">Add delays (1-4 TR intervals)</span>
     <span class="pipe-arrow">→</span>
     <span class="pipe-step">Ridge regression</span>
     <span class="pipe-arrow">→</span>
@@ -197,10 +197,10 @@
     <tr><th>Step</th><th>Object</th><th>Shape</th><th>Notes</th></tr>
     <tr><td>Raw text</td><td>Word list</td><td>$W_s$ words</td><td>e.g., $W_s \approx 800$ for a ~5 min story</td></tr>
     <tr><td>Embedding</td><td>$E$</td><td>$W_s \times p$</td><td>$p = 768$ for BERT, $300$ for Word2Vec</td></tr>
-    <tr><td>Downsample</td><td>$E'$</td><td>$T_s \times p$</td><td>$T_s \approx 241$ timepoints for one story</td></tr>
+    <tr><td>Downsample</td><td>$E'$</td><td>$(T_s + 15) \times p$</td><td>Uses all <code>tr_times</code> entries (e.g., 256 for adollshouse)</td></tr>
+    <tr><td>Align to fMRI</td><td>$E'$</td><td>$T_s \times p$</td><td>Drop 5 padding rows at start, 10 at end → matches Y</td></tr>
     <tr><td>Add delays</td><td>$X_{\text{story}}$</td><td>$T_s \times 4p$</td><td>$4 \times 768 = 3072$ for BERT</td></tr>
-    <tr><td>Trim</td><td>$X_{\text{story}}$</td><td>$(T_s - 15) \times 4p$</td><td>Remove first 5, last 10 timepoints</td></tr>
-    <tr><td>Stack stories</td><td>$X$</td><td>$T \times 4p$</td><td>$T = \sum_s (T_s - 15) \approx 23{,}000$</td></tr>
+    <tr><td>Stack stories</td><td>$X$</td><td>$T \times 4p$</td><td>$T = \sum_s T_s \approx 23{,}000$</td></tr>
     <tr><td>BOLD response</td><td>$Y$</td><td>$T \times V$</td><td>$V = 94{,}251$ for subject 2</td></tr>
     <tr><td>Ridge solution</td><td>$\hat{B}$</td><td>$4p \times V$</td><td>One weight vector $\hat{\beta}_i$ per voxel (column)</td></tr>
     <tr><td>Prediction</td><td>$\hat{Y}_{\text{test}}$</td><td>$T_{\text{test}} \times V$</td><td>Evaluate CC per column</td></tr>
@@ -345,11 +345,11 @@
 <div style="flex:1">
 <div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Downsampled $E'$</div>
 <div style="display:inline-grid;grid-template-columns:repeat(20,5px);grid-template-rows:repeat(4,5px);border:1px solid var(--border);border-radius:3px;overflow:hidden;" id="viz-e2"></div>
-<div style="font-size:0.82rem;color:var(--text-muted);">$E' \in \mathbb{R}^{T_s \times p}$ (e.g., $241 \times 768$) — fewer rows, same columns</div>
+<div style="font-size:0.82rem;color:var(--text-muted);">$E' \in \mathbb{R}^{(T_s+15) \times p}$ (e.g., $256 \times 768$) — includes padding rows</div>
 </div>
 </div>
 
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ <code>make_delayed([1,2,3,4])</code> — concatenate shifted copies</div>
+<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ drop 5 padding rows at start + 10 at end → $T_s \times p$, then <code>make_delayed([1,2,3,4])</code></div>
 
 <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
 <div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 4</div>
@@ -365,7 +365,7 @@
 </div>
 </div>
 
-<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ trim edges + stack all training stories</div>
+<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin:4px 0 4px 60px;">↓ stack all training stories</div>
 
 <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:12px">
 <div style="min-width:60px;font-size:0.82rem;font-weight:600;color:var(--text-muted);padding-top:2px;">Step 5</div>
@@ -442,10 +442,10 @@ if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random
   $$E'(t_n^{\text{scan}}) = \sum_{k=1}^{W_s} w_{nk} \cdot e_k$$
   where the weights $w_{nk}$ depend on how close word $k$'s onset time is to scanner timepoint $n$. Words spoken near $t_n^{\text{scan}}$ get high weight; words spoken far from $t_n^{\text{scan}}$ get near-zero weight. The Lanczos kernel (a windowed sinc function) determines the exact weights, with a window parameter controlling how many nearby words contribute (default: 3 lobes).
   <br><br>
-  <strong>Dimensions:</strong> story $s$ has $W_s$ words and $T_s$ scanner timepoints. The raw embedding matrix $E \in \mathbb{R}^{W_s \times p}$ becomes $E' \in \mathbb{R}^{T_s \times p}$. Each row of $E'$ is a weighted blend of the rows of $E$.
+  <strong>Dimensions:</strong> story $s$ has $W_s$ words. The <code>tr_times</code> array has $T_s + 15$ entries (including 5 padding entries before the story and 10 after), so the downsampled matrix $E' \in \mathbb{R}^{(T_s + 15) \times p}$ has more rows than Y. The alignment step (Step 3) drops the padding rows to get $E' \in \mathbb{R}^{T_s \times p}$.
 </div>
 
-<p><strong>Example:</strong> for a story with $W_s = 800$ words and $T_s = 241$ timepoints, a BERT embedding ($p = 768$) goes from $800 \times 768$ to $241 \times 768$. If three words were spoken during the 2-second interval around timepoint $n$, the embedding at timepoint $n$ is roughly an average of those three words' embeddings, with the word closest in time weighted most heavily.</p>
+<p><strong>Example:</strong> <code>adollshouse</code> has $W_s = 1656$ words and <code>tr_times</code> has 256 entries, so downsampling gives $1656 \times 768 \to 256 \times 768$. After dropping the 5 + 10 padding rows (Step 3), you get $241 \times 768$, matching Y. Each row is a weighted blend of nearby word embeddings, with words closest in time weighted most heavily.</p>
 
 <div class="watchout">Because each timepoint's embedding is a blend of several words, the model never sees a "pure" single-word signal. This matters for interpretation: when SHAP says "the word 'dog' is important for this voxel," it means that removing 'dog' changes the blended embeddings at the timepoints where 'dog' contributes, which in turn changes the predicted BOLD signal. The word-level attribution works because the SHAP/LIME wrapper re-runs the full pipeline (including downsampling) for each text perturbation, so the effect of removing a single word propagates naturally through the blending step.</div>
 
@@ -464,13 +464,17 @@ if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random
 
 <p><strong>Why these specific delays?</strong> The HRF peaks at 4-6 seconds post-stimulus. With TR $\approx$ 2s, delays of 1-4 TR intervals correspond to 2, 4, 6, and 8 seconds. The ridge regression learns a weight for each delay at each voxel, effectively fitting the HRF shape per voxel. Some voxels respond faster (more weight on delay 1-2), others slower (more weight on delay 3-4).</p>
 
-<h3>Step 3: Trimming</h3>
+<h3>Step 3: Aligning X to Y</h3>
 
-<p>Remove the first 5 timepoints (~10 seconds) and last 10 timepoints (~20 seconds) from both the delayed embedding matrix $X_{\text{story}}$ and the corresponding BOLD response columns. This eliminates onset/offset artifacts: the scanner is stabilizing, the subject may not yet be attending, and the hemodynamic response needs time to ramp up. After trimming, a story with $T_s = 241$ timepoints becomes $T_s - 15 = 226$ usable timepoints.</p>
+<p>The scanner started ~10 seconds before each story (giving 5 TRs with negative timestamps) and continued after the story ended. The raw data had 256 timepoints for <code>adollshouse</code>, but the Y data provided to you has only 241 rows: 15 timepoints were removed during preprocessing because fMRI responses at the edges of stories are noisier due to scanner transients and detrending artifacts.</p>
 
-<p><strong>Stacking stories:</strong> after trimming, the per-story matrices are vertically concatenated across all training stories to form the full design matrix $X \in \mathbb{R}^{T \times 4p}$ and response matrix $Y \in \mathbb{R}^{T \times V}$, where $T = \sum_s (T_s - 15) \approx 23{,}000$ is the total number of usable timepoints across all stories. This is where the notation switches from $T_s$ (per-story) to $T$ (all stories stacked).</p>
+<p>When you downsample your embeddings using all 256 <code>tr_times</code> entries, you get 256 rows. You need to drop the same 15 rows that were removed from Y so the dimensions match. The question is which 15.</p>
 
-<div class="watchout">A note on trimming from a previous semester: the lab instructions say trim 5 timepoints at the start and 10 at the end, but because the stimulus TR times start at $-9$s (padding for HRF lag), trimming 10 timepoints at the start and 5 at the end may yield better correlations. The Huth lab's own tutorial code uses <code>[5+trim:-trim]</code> indexing consistent with 10-start/5-end. The key principle is that X and Y must be aligned after trimming: however many timepoints you remove, remove them from the same positions in both matrices. Either approach is defensible as long as it is clearly justified in the report. If your group has already implemented one approach for 3.1, stick with it.</div>
+<p>The Huth lab's own <a href="https://github.com/HuthLab/speechmodel-tutorial">tutorial code</a> uses <code>[5+trim:-trim]</code> with <code>trim=5</code>, giving <code>[10:-5]</code>: drop 10 from the start (5 pre-story padding + 5 noise buffer) and 5 from the end (noise buffer). The lab instructions say "trim the first 5 and last 10," which reverses this, but the <code>[10:-5]</code> split has stronger reference support and tends to give better correlations in practice. Either way, you need to remove exactly 15 rows total, and document your choice.</p>
+
+<p>If you want to trim a few <em>additional</em> TRs from both X and Y beyond these 15 (e.g., because the BOLD signal still shows some edge effects in the kept region), that's a defensible judgment call. The edge artifacts are gradual rather than sharp, so the pre-trimming removed the worst of it but didn't eliminate residual effects entirely.</p>
+
+<p><strong>Stacking stories:</strong> after alignment, the per-story matrices are vertically concatenated across all training stories to form the full design matrix $X \in \mathbb{R}^{T \times 4p}$ and response matrix $Y \in \mathbb{R}^{T \times V}$, where $T = \sum_s T_s \approx 23{,}000$ is the total number of timepoints across all stories.</p>
 
 <h3 id="pipeline-ridge">Step 4: Ridge Regression</h3>
 
@@ -478,7 +482,7 @@ if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random
 
 <div class="defn">
   <span class="label">Setup and Notation</span>
-  Fix a subject $j \in \{2, 3\}$. Let $p$ denote the embedding dimension (e.g., $p = 300$ for Word2Vec, $p = 768$ for BERT). After applying delays with lags 1 through 4, the feature dimension becomes $4p$. Let $V_j$ denote the number of voxels for subject $j$ ($V_2 = 94{,}251$, $V_3 = 95{,}556$). Let $T$ denote the total number of timepoints across all training stories (after trimming).
+  Fix a subject $j \in \{2, 3\}$. Let $p$ denote the embedding dimension (e.g., $p = 300$ for Word2Vec, $p = 768$ for BERT). After applying delays with lags 1 through 4, the feature dimension becomes $4p$. Let $V_j$ denote the number of voxels for subject $j$ ($V_2 = 94{,}251$, $V_3 = 95{,}556$). Let $T$ denote the total number of timepoints across all training stories.
   <br><br>
   <strong>Design matrix (shared across voxels):</strong>
   $$X \in \mathbb{R}^{T \times 4p}$$
@@ -505,7 +509,16 @@ if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random
   Column $i$ of $\hat{B}$ is $\hat{\beta}_i$. The important thing: $X^\top X + \alpha_{\text{ridge}} I$ is inverted only once (it doesn't depend on $i$), then multiplied by each column of $Y$. That's why fitting ~94k regressions is feasible.
 </div>
 
-<p><strong>Cross-validation:</strong> leave-one-story-out (LOSO). Train on all stories except one, predict on the held-out story. The regularization parameter $\alpha_{\text{ridge}}$ is selected via grid search. The incremental approach (precompute global $X^\top X$ and $X^\top Y$, subtract each story's contribution) avoids reprocessing all training data per fold.</p>
+<p><strong>Cross-validation:</strong> leave-one-story-out (LOSO). Train on all stories except one, predict on the held-out story. The regularization parameter $\alpha_{\text{ridge}}$ is selected via grid search over the LOSO folds.</p>
+
+<div class="defn">
+  <span class="label">Incremental LOSO trick</span>
+  Don't recompute $X^\top X$ and $X^\top Y$ from scratch for every fold. Precompute the global sums across all stories:
+  $$X^\top X = \sum_s X_s^\top X_s, \qquad X^\top Y = \sum_s X_s^\top Y_s$$
+  Then for fold $s$ (holding out story $s$), the training-set quantities are just:
+  $$(X^\top X - X_s^\top X_s + \alpha_{\text{ridge}} I)^{-1}(X^\top Y - X_s^\top Y_s)$$
+  One matrix inverse per fold per $\alpha$ value, instead of rebuilding $X^\top X$ from ~100 stories each time. Same idea applies across $\alpha$ values: the subtraction is the same for all $\alpha$, only the diagonal shift changes.
+</div>
 
 <div class="defn">
   <span class="label">Evaluation</span>
@@ -525,6 +538,10 @@ if(cc){var vals=[];for(var i=0;i<60;i++)vals.push(Math.random()<0.85?Math.random
 <p><strong>Multiple random splits:</strong> randomly partition stories into train/test several times, fit and evaluate each split, report averaged CCs. This gives you error bars on your evaluation metrics, which strengthens any comparison between embedding methods. If BERT beats GloVe on one split but not another, that's important to know.</p>
 
 <p>Whatever you choose, use the same splits across all embedding methods so comparisons are fair. And if you report a single number (e.g., "mean CC = 0.12"), be clear about what it's averaging over: voxels, stories, splits, or some combination.</p>
+
+<div class="watchout">Do not use the same held-out stories for both hyperparameter selection ($\alpha_{\text{ridge}}$) and final model evaluation. If you select $\alpha$ using LOSO across all stories, then report CC on one of those same held-out folds, you've leaked information. Either reserve a separate final test set that's never touched during CV, or be explicit that your reported CCs are cross-validated estimates, not independent test performance.</div>
+
+<p>Fit entirely separate models per subject. Subjects have different numbers of voxels and different brain geometry, so sharing data across subjects would introduce data leakage and wouldn't make sense anatomically.</p>
 
 <div class="watchout">Memory is the main computational bottleneck. The $X$ matrix ($T \times 4p$) is manageable, but $Y$ ($T \times 94{,}000$) in float64 is ~18 GB across all stories. Practical solutions: cast to <code>float32</code> (halves memory), use memory-mapped loading (<code>np.load(..., mmap_mode='r')</code>), and process voxels in batches rather than all at once. Students who completed 3.1 should already have a working pipeline for this.</div>
 
@@ -641,16 +658,24 @@ exp = lime_explainer.explain_instance(
 <h2 id="infra">Infrastructure</h2>
 
 <h3>Bridges-2 (PSC)</h3>
-<p>Pittsburgh Supercomputing Center HPC cluster. Data at: <code>/ocean/projects/mth250011p/shared/215a/final_project/data</code>. Shared storage: 512 GB for the whole class (provisioning an additional 512 GB). Always submit jobs via <code>sbatch</code>, not the login node. Request memory explicitly (e.g., <code>--mem=64G</code>).</p>
+<p>Pittsburgh Supercomputing Center HPC cluster. Data at: <code>/ocean/projects/mth250011p/shared/215a/final_project/data</code>. Use <code>/ocean</code> for storage (not your home directory, which has limited quota). Shared class storage: 512 GB (provisioning an additional 512 GB).</p>
 
 <h3>SCF (Berkeley Stats)</h3>
-<p>Stats Computing Facility, local alternative. Data mirrored at: <code>/scratch/users/s214/lab3</code>. Some students have reported permission issues accessing this path.</p>
+<p>Stats Computing Facility, local alternative. Data mirrored at: <code>/scratch/users/s214/lab3</code>. Use <code>/scratch/users/your_username</code> for your working files. Some students have reported permission issues accessing the shared data path.</p>
 
-<h3>Common Student Pain Points</h3>
+<h3>HuggingFace</h3>
+<p>100GB free storage, useful for sharing large files (embeddings, trained models) within your group. Can be accessed programmatically from either cluster.</p>
+
+<h3>Compute Rules</h3>
+<p><strong>Do not run jobs on login nodes.</strong> This slows down the entire cluster for everyone. Submit jobs via <code>sbatch</code> or use an interactive JupyterHub session. Request memory explicitly (e.g., <code>--mem=64G</code>).</p>
+
+<p><strong>Only use GPUs for BERT fine-tuning and embedding extraction.</strong> Ridge regression and scikit-learn operations run on CPU only and won't benefit from a GPU. Don't hold a GPU allocation while running ridge fits.</p>
+
+<h3>Common Pain Points</h3>
 <ul>
-  <li><strong>Kernel crashes:</strong> usually running on the login node instead of submitting via <code>sbatch</code>, or insufficient memory allocation</li>
-  <li><strong>Memory:</strong> use <code>float32</code>, memory-mapped loading, process voxels in batches. Bag-of-words embeddings are sparse and should be stored in compressed format (<code>scipy.sparse</code>), but Word2Vec, GloVe, and BERT embeddings are dense</li>
-  <li><strong>Storage:</strong> do not store unnecessarily large files. Use HuggingFace (100GB free) for sharing within groups. Compress where possible</li>
+  <li><strong>Kernel crashes:</strong> usually from running on the login node or insufficient memory allocation</li>
+  <li><strong>Memory:</strong> cast to <code>float32</code> (halves memory), use memory-mapped loading (<code>np.load(..., mmap_mode='r')</code>), process voxels in batches. Bag-of-words embeddings are sparse (<code>scipy.sparse</code>), but Word2Vec, GloVe, and BERT embeddings are dense</li>
+  <li><strong>Storage:</strong> don't store unnecessarily large files. Compress where possible</li>
   <li><strong>Permissions:</strong> ensure GitHub org and classroom invitations are accepted</li>
 </ul>
 
