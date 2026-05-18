@@ -1,0 +1,6 @@
+**Verdict:** OK.
+
+**Specific issues:**
+1. U=9/12 is internally consistent. Code confirms wrapper violation: `ProcessedXInterpreter.mask_X` (`lab3_3_interpretation.py:350-358`) operates on the standardized design matrix `X_story_z` (`:195`), zero-ing rows by chunk; `run_shap_kernel` (`:415-444`) passes binary masks to `shap.KernelExplainer(interpreter.score_masks, ...)` and `run_lime_style` (`:394-412`) feeds the same `score_masks` into a cosine-kernel weighted LR. BERT is never re-invoked. But engineering is genuinely textbook (real `shap.KernelExplainer`, proper LIME kernel-width = √n_chunks × 0.75, weighted local LR). Scope is also broader than peers: top-5 voxels per (subject, story) selected (`:207-233`), both required stories (`sweetaspie`, `notontheusualtour`), both subjects. The −2 (1.5/2 × 6 items = 9) is well-calibrated against Group 09 (−7: same violation + only 2 voxels + 1 subject) and Group 02 (−8: same violation + single voxel + single story + indirect token attribution).
+2. S −1 for CV mismatch verified: `lab3_1_modeling.py:59-63` shows `ALPHAS=np.logspace(0,3,6)` and `bootstrap_ridge(NBOOTS=1,...)` contra report §1.1's "5-fold CV, α∈{1,10,100,1000,10000}". Per-voxel alpha selection still sound; −1 is the right magnitude.
+3. Q, W, Y scores all supported by evidence in notes.

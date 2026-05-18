@@ -1,0 +1,7 @@
+**Verdict:** OK (lean toward slightly harsh on U, but defensible)
+
+**Specific issues:**
+1. **Jaccard bug is real (U −0.5 each story justified).** Confirmed from `results/shap_lime_subject2_metsmagic.json`: SHAP tokens carry a trailing space (`'fans '`, `'on '`, `'jubilant '`) because `shap.maskers.Text(r"\s+")` keeps the whitespace suffix in `sv.data[0]`, while LIME's `as_list` returns clean tokens (`'fans'`). Set intersection → 0 across all 40 voxels, hence `mean_jaccard_shap_lime=0.0`. This is a string-formatting/comparison bug, not a position-vs-type one (group's own p.12 framing is also slightly off). Note SHAP↔SHAP and LIME↔LIME stability Jaccards are nonzero (0.79/0.03) because they're computed within-method where the whitespace artifact cancels. Grader's read is correct.
+2. **Wrapper pattern verified.** `shap_lime_analysis.py:206-229` `fMRIPredictor.__call__` does `text.split()` → full BERT→downsample→trim→delay→standardize→ridge pipeline per perturbed string. Genuine text-perturbation wrapper; not a vector-space shortcut.
+3. **Both full MLM FT and LoRA r=4/8/16 confirmed.** `generate_bert_embeddings.py:262 train_bert`, `:383 BertForMaskedLM`, `:374 LoraConfig`. Three shell scripts `run_bert_lora_r{4,8,16}.sh` plus `run_bert_finetune.sh`. Calibration ceiling applied correctly.
+4. **Y −0.5 defensible.** Figs 5/7 show only Subject 2; per-story figs (10-11 not re-inspected) flagged for rotation. No side-by-side SHAP/LIME composite. Minor.
